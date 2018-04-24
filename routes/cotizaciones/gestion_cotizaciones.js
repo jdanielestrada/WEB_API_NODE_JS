@@ -54,7 +54,7 @@ router.get('/prueba', function (req, res, next) {
 
 //PRUEBA SERVIDOR 192.168.1.20 RTA
 
-router.get('/prueba2', function (req, res, next) {
+router.get('/get_tipos_proyectos', function (req, res, next) {
     //  console.log(req.params);
      //return;
      config.configBD3.database = CONSTANTES.RTABD;
