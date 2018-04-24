@@ -83,4 +83,71 @@ router.get('/prueba2', function (req, res, next) {
      });
  });
 
+
+
+//CONSULTA LOS PRODUCTOS DESARROLLADOS PARA LLENAR EL COMBO DE BUSQUEDA
+
+router.get('/GET_PRODUCTOS_DESARROLLADOS', function (req, res, next) {
+    //  console.log(req.params);
+     //return;
+     config.configBD3.database = CONSTANTES.RTABD;
+     console.log(config.configBD3.database);
+     var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+         // ... error checks
+         if (err) {
+             console.error(err);
+             res.json(err);
+         }
+ 
+         // Stored Procedure
+         var request = new sql.Request(connection);
+         request.verbose = true;
+ 
+         request.execute('RTA.GET_PRODUCTOS_DESARROLLADOS', function (err, recordsets, returnValue) {
+             if (err) {
+                 res.json(err);
+             }
+ 
+             res.json({
+                 data: recordsets
+             });
+         });
+ 
+     });
+ });
+
+
+//CONSULTA EL PRODUCTO DESARROLLADO CON SUSMATERIALES FILTRANDO POR EL PARAMETRO ID_ITEM
+
+ router.get('/GET_PRODUCTOS_DESARROLLADOS_BY_FILTRO/:idItemReferencia', function (req, res, next) {
+      console.log(req.params);
+
+     config.configBD3.database = CONSTANTES.RTABD;
+     console.log(config.configBD3.database);
+     var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+         // ... error checks
+         if (err) {
+             console.error(err);
+             res.json(err);
+         }
+ 
+         // Stored Procedure
+         var request = new sql.Request(connection);
+         request.verbose = true;
+         request.input("IN_ID_ITEM_REFERENCIA", sql.VarChar(6), req.params.idItemReferencia);
+         request.execute('RTA.GET_PRODUCTOS_DESARROLLADOS_BY_FILTRO', function (err, recordsets, returnValue) {
+             if (err) {
+                 res.json(err);
+             }
+ 
+             res.json({
+                 data: recordsets
+             });
+         });
+ 
+     });
+ });
+
+
+
 module.exports = router;
