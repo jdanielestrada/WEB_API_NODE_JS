@@ -1,0 +1,408 @@
+﻿<!DOCTYPE html>
+<html> 
+ 
+<head>
+    <title>Factura Cr&eacute;dito</title>
+</head>
+
+<body>
+    <link rel="stylesheet" type="text/css" href="../../public/stylesheets/bootstrap.min.css">
+    <style type="text/css">
+        @page {
+            size: 21cm 29.7cm;
+            margin: 30mm 45mm 30mm 45mm;
+        }
+        
+        div.chapter,
+        div.appendix {
+            page-break-after: always;
+        }
+        
+        body {
+            font-size: 12px;
+        }
+        
+        .fuente-elevada-2 {
+            font-size: 1.3em;
+        }
+        
+        .fuente-elevada-1 {
+            font-size: 1.1em;
+        }
+        
+        .rojo {
+            color: red;
+        }
+        
+        .div-main {
+            padding: 25px;
+        }
+        
+        .width-100 {
+            width: 100%;
+        }
+        
+        .bold {
+            font-weight: bold;
+        }
+        
+        .bordeado {
+            border: 2px solid black;
+            padding: 5px;
+        }
+        
+        .bordeado>td {
+            padding: 2px;
+        }
+        
+        .condiciones {
+            font-size: smaller;
+        }
+        
+        .cabecera-detalle {
+            border: 2px solid black;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .item-detalle tr td {
+            border-left: 2px solid black;
+            border-right: 2px solid black;
+            border-top: 0px solid white;
+            border-bottom: 0px solid white;
+        }
+        
+        .table-fecha-entrega thead tr td,
+        .table-fecha-entrega tbody tr td {
+            border: 2px solid black;
+        }
+        
+        .table-senores tr td {
+            padding: 0px 0px 0px 5px;
+        }
+        
+        .borde-superior-inferior {
+            border-width: 2px 2px 2px 2px !important;
+            border-color: black !important;
+        }
+        
+        .borde-superior {
+            border-top: 2px solid black !important;
+            border-right: 2px solid black !important;
+            border-bottom: 0px solid white !important;
+        }
+        
+        .borde-inferior {
+            border-bottom: 2px solid black !important;
+            border-right: 2px solid black !important;
+            border-top: 0px solid white !important;
+        }
+        
+        .text-derecha {
+            text-align: right;
+        }
+        
+        .padding-0 {
+            padding: 0px !important;
+        }
+        
+        .cabecera tr td {
+            padding: 0px !important;
+        }
+        
+        fieldset>legend {
+            font-weight: bold;
+            width: auto;
+            border-bottom: initial;
+            margin-bottom: 5px;
+            background: white;
+            margin-left: 10px;
+        }
+        
+        fieldset {
+            border: black solid 2px;
+            /*-webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            border-radius: 5px;*/
+            margin-top: -10px;
+        }
+    </style>
+    {{#cabeceras}}
+    {{#hojas}}
+    <div class="div-main chapter" style="width:100%;">
+        <!--fila de header -->
+        <table class="width-100">
+
+            <tbody>
+                <tr>
+                    <td width="200px;">
+                        <img src="../../public/images/logo-madecentro.png" style="width:200px;" alt="logo">
+                    </td>
+                    <td>
+                        <table class="width-100">
+
+                            <tbody class="cabecera">
+                                <tr>
+                                    <td colspan="2" class="fuente-elevada-2">MADECENTRO COLOMBIA S.A.S</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        NIT: 811028650-1
+                                    </td>
+                                    <td><span class="bold fuente-elevada-2">FACTURA DE VENTA No. {{f_numero}}</span> </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        {{f_direccion_co}}
+                                    </td>
+                                    <td>{{f_primera_linea_notas}}</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="bold"> PBX:</span> {{f_telefono_co}}
+                                    </td>
+                                    <td>GRAN CONTRIBUYENTE RES. No. {{f_resol_gc}} DEL {{f_fecha_gc}}</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="bold"> FAX:</span> {{f_fax_co}}
+                                    </td>
+                                    <td>{{f_segunda_linea_notas}}</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="bold">E-mail:</span> {{f_email_co}}
+                                    </td>
+                                    <td>AUTORETENEDORES RES. No. {{f_resol_autoret}} DEL {{f_fecha_autoret}}</td>
+                                </tr>
+                                <tr>
+                                    <td style="max-width:250px;">
+                                        <span class="bold" style="font-size:1.2em;">{{f_primera_linea_notas_docto}}</span>
+                                    </td>
+                                    <td style="vertical-align: text-top;">IMPRESO POR: {{f_impreso_por}}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="text-align:center;">
+                                        Resol No. {{f_nro_resolucion}} Facturaci&oacute;n del {{f_nro_inicial}} al {{f_nro_final}} Fecha {{f_fecha_resolucion}} - hasta {{f_fecha_resolucion_vcto}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        {{f_septima_linea_docto}}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <!--fila de header señores y fechas -->
+        <table class="width-100">
+
+            <tbody>
+                <tr>
+                    <td>
+                        <fieldset>
+                            <legend style="font-size: 15px;">SEÑORES</legend>
+                            <!--señores -->
+                            <table class="width-100 fuente-elevada-2" style="border: white solid 0px;">
+                                <tbody class="table-senores">
+                                    <tr>
+                                        <td colspan="2">
+                                            {{f_razon_social}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Nit {{f_nit}}</td>
+                                        <td>Tel: {{f_telefono_cli}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            {{f_direccion_cli}} {{f_barrio_cliente}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            {{f_contacto}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            {{f_desc_ciudad_cliente}}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </fieldset>
+                    </td>
+                    <td>
+                        <!--vacio -->
+                    </td>
+                    <td>
+                        <!-- fechas y otras cosas -->
+                        <table class="bordeado table-fecha-entrega" style="float: right;">
+                            <thead>
+                                <tr>
+                                    <td style="padding:3px;">FECHA DE ENTREGA</td>
+                                    <td style="padding:3px;">VENCIMIENTO</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="text-align:center;">
+                                        <span>DIA MES AÑO</span>
+                                        <br>
+                                        <span>{{f_fecha}}</span>
+                                    </td>
+                                    <td style="text-align:center;">
+                                        <span>DIA MES AÑO</span>
+                                        <br>
+                                        <span>{{f_fecha_vcto}}</span>
+                                    </td>
+                                </tr>
+                                <tr style="text-align:center;">
+                                    <td>REMISION No.</td>
+                                    <td>VENDEDOR</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        &nbsp;{{f_pedido}}
+                                        <br>&nbsp;{{f_remision}}
+                                    </td>
+                                    <td style="text-align:center;">
+                                        {{f_vendedor}}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <!--fila de Detalles -->
+        <table class="width-100" style="margin-top:5px;">
+            <thead>
+                <tr>
+                    <td style="width:10%" class="cabecera-detalle">CODIGO</td>
+                    <td style="width:40%" colspan="2" class="cabecera-detalle">DESCRIPCI&Oacute;N ART&Iacute;CULO</td>
+                    <td style="width:10%" class="cabecera-detalle">CANTIDAD</td>
+                    <td style="width:15%" class="cabecera-detalle">VR. UNITARIO</td>
+                    <td style="width:10%" class="cabecera-detalle">% DSCTO</td>
+                    <td style="width:15%" class="cabecera-detalle">VR. PARCIAL</td>
+                </tr>
+            </thead>
+            <tbody class="item-detalle ">
+                {{#detalles_x_hojas}}
+                <!--iterar-->
+                <tr class="fuente-elevada-1">
+                    <td>&nbsp;{{f2_id_item}}</td>
+                    <td colspan="2">&nbsp;{{f2_desc_item}}</td>
+                    <td class="text-derecha">{{f2_cantidad}}&nbsp;</td>
+                    <td class="text-derecha">{{f2_precio_uni}}&nbsp;</td>
+                    <td class="text-derecha">{{f2_porcentaje_dscto}}&nbsp;</td>
+                    <td class="text-derecha">{{f2_vlr_cuota}}&nbsp;</td>
+                </tr>
+                {{/detalles_x_hojas}}
+                <tr>
+                    <td class="borde-superior-inferior" style="padding-left:5px;">
+                        P&Aacute;GUESE ANTES DE
+                    </td>
+                    <td colspan="4" class="borde-superior-inferior">
+                        <span>&nbsp;{{f_fecha_pp}}<br>&nbsp;DIA MES AÑO</span> <span style="float:right;">
+                            OBTENGA UN DESCUENTO DE {{f_valor_tasa_dscto_ppto}}&nbsp;%&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{f_valor_dscto_ppto}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            </span>
+                    </td>
+                    <td class="borde-superior ">&nbsp;TOTAL BRUTO</td>
+                    <td class="borde-superior text-derecha">{{func_f_subtotal_format}}&nbsp;</td>
+                </tr>
+                <tr>
+            <td colspan="5" class="borde-superior-inferior">
+                        <span class="condiciones">&nbsp;<b>OBSERVACIONES:</b> {{f_notas}}. </span>
+                        {{#show_f_tentativa_entrega_cliente}}
+                        <span class="condiciones">Fecha tentativa entrega en punto de venta: <b>{{f_tentativa_entrega_cliente}}</b></span>
+                        <br />
+                        <span class="condiciones" style="margin: 0px !important; padding: 0px !important;">
+                            <b>Nota</b>: El cliente debe asistir en la fecha y horario indicado para la entrega de su producto; de no hacerlo en la forma indicada podrá perder el agendamiento de la cita y se deberá reasignar para otro día que haya disponibilidad.
+                            La fecha de entrega es tentativa por lo cual MADECENTRO COLOMBIA se reserva el derecho de reprogramar la cita de entrega por cualquier motivo que ocasione esta situación y asi lo acepta el cliente de ahora en adelante.
+                        </span>
+                        {{/show_f_tentativa_entrega_cliente}}
+                    </td>
+                    <td>
+                        &nbsp;TOTAL DSCTO
+                        <br>&nbsp;SUB-TOTAL
+                        <br>&nbsp;I.V.A.
+                    </td>
+                    <td class="text-derecha">
+                        {{func_f_descuento_format}}
+                        <br>{{func_subtotal}}
+                        <br>{{f_vlr_imp}}&nbsp;
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="borde-superior" style="padding-top: 0px!important;">
+                        &nbsp;RECIBI (FIRMA, NOMBRE Y SELLO)<br>
+                        <br>
+                        <br>
+                        <br>
+                    </td>
+                    <td colspan="3" rowspan="5" class="borde-superior-inferior " style="padding-top: 0px!important;">
+                        <span class="condiciones" style="margin:0px !important;padding:0px !important;">
+                            Todo reclamo se debe efectuar antes de la firma de la remision de transporte o factura. Debe ser cancelada dentro del plazo estipulado, pasado este, cobraremos interés de mora a la tasa máxima legal autorizada por la ley. Páguese únicamente con cheque
+                        cruzado a favor de MADECENTRO COLOMBIA S.A.S Factura asimilada a letra de cambio art. 774 Codigo de Comercio Aceptada factura de venta, cliente autoriza consulta y reporte a las centrales de riesgo
+                        <br> {{f_segunda_linea_notas_docto}}{{f_tercera_linea_notas_docto}}
+                       </span>
+                    </td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td colspan="2">&nbsp;</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td colspan="2">&nbsp;</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td colspan="2">&nbsp;</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="borde-inferior" colspan="2">
+                        &nbsp;NIT/C.C &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <span style="float:right;">DIA MES&nbsp;</span>
+                    </td>
+                    <td class="borde-superior-inferior">
+                        <span class="bold">&nbsp;VR. NETO</span>
+                    </td>
+                    <td class="borde-superior-inferior text-derecha">
+                        <span class="bold"> {{f_total}}&nbsp;</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table class="width-100">
+            <tbody>
+                <tr>
+                    <td style="text-align: center;">
+                        <span>MADECENTRO COLOMBIA S.A.S {{f_direccion_cia}}, PBX {{f_telefono_cia}}</span>
+                        <br>
+                        <span class="bold fuente-elevada-2">
+                            {{F_TIPO_IMPRESION}}
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <!--fila de Footer -->
+        <span style="float: right;">Pag. {{page}}/{{maximo_hojas}}</span>
+    </div>
+    {{/hojas}}
+    {{/cabeceras}}
+</body>
+
+</html>

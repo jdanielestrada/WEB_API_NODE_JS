@@ -1,0 +1,58 @@
+{
+  "name": "web_api_node_js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "inicio.js",
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "author": {
+    "name": "JOSE DANIEL ESTRADA PULGARIN",
+    "email": "jdanielestrada18@gmail.com"
+  },
+  "dependencies": {
+    "async": "^2.1.5",
+    "axios": "^0.15.3",
+    "bluebird": "^3.5.0",
+    "body-parser": "~1.17.1",
+    "connect-multiparty": "^2.1.0",
+    "cookie-parser": "~1.4.3",
+    "cors": "^2.8.1",
+    "cron": "^1.2.1",
+    "debug": "~2.6.1",
+    "emailjs": "^1.0.8",
+    "express": "~4.15.2",
+    "html-pdf": "^1.5.0",
+    "jade": "~1.11.0",
+    "jquery": "^3.2.1",
+    "jsdom": "^11.1.0",
+    "mailin-api-node-js": "^1.0.0",
+    "mkpath": "^1.0.0",
+    "moment": "^2.17.1",
+    "morgan": "~1.8.1",
+    "msnodesqlv8": "^0.2.15",
+    "mssql": "^3.3.0",
+    "mustache": "^2.3.0",
+    "node-base64-image": "1.0.3",
+    "nodemailer": "^3.1.8",
+    "nodemailer-smtp-transport": "^2.7.2",
+    "numeral": "^2.0.4",
+    "q": "^1.4.1",
+    "request": "^2.80.0",
+    "serve-favicon": "~2.4.1",
+    "socket.io": "^1.7.3",
+    "strong-soap": "^1.2.3",
+    "tedious": "^1.14.0",
+    "tedious-connection-pool": "^1.0.5",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "better-npm-run": "^0.0.14",
+    "concurrently": "^3.4.0",
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.1.3",
+    "eslint-plugin-import": "^2.2.0",
+    "json-loader": "^0.5.4",
+    "nodemon": "^1.11.0"
+  }
+}
