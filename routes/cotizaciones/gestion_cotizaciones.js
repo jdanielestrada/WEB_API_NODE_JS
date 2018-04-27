@@ -119,7 +119,7 @@ router.get('/GET_PRODUCTOS_DESARROLLADOS', function (req, res, next) {
 
 //CONSULTA EL PRODUCTO DESARROLLADO CON SUSMATERIALES FILTRANDO POR EL PARAMETRO ID_ITEM
 
- router.get('/GET_PRODUCTOS_DESARROLLADOS_BY_FILTRO/:idItemReferencia', function (req, res, next) {
+router.get('/GET_MATERIALES_PRODUCTOS_DESARROLLADOS/:idItemReferencia', function (req, res, next) {
       console.log(req.params);
 
      config.configBD3.database = CONSTANTES.RTABD;
@@ -135,7 +135,7 @@ router.get('/GET_PRODUCTOS_DESARROLLADOS', function (req, res, next) {
          var request = new sql.Request(connection);
          request.verbose = true;
          request.input("IN_ID_ITEM_REFERENCIA", sql.VarChar(6), req.params.idItemReferencia);
-         request.execute('RTA.GET_PRODUCTOS_DESARROLLADOS_BY_FILTRO', function (err, recordsets, returnValue) {
+         request.execute('RTA.GET_MATERIALES_PRODUCTOS_DESARROLLADOS', function (err, recordsets, returnValue) {
              if (err) {
                  res.json(err);
              }
@@ -147,6 +147,45 @@ router.get('/GET_PRODUCTOS_DESARROLLADOS', function (req, res, next) {
  
      });
  });
+
+
+
+//AUTENTICAR USUARIO
+
+router.get('/GET_AUTENTICAR_USUSARIO/:usuario/:password', function (req, res, next) {
+    console.log(req.params);
+
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            res.json(err);
+        }
+
+        // Stored Procedure
+        var request = new sql.Request(connection);
+        request.verbose = true;
+        request.input("IN_USUARIO", sql.VarChar(30), req.params.usuario);
+        request.input("IN_PASSWORD", sql.VarChar(30), req.params.password);
+
+        request.output('MSG', sql.VarChar);
+
+        request.execute('RTA.GET_AUTENTICAR_USUSARIO', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json(err);
+            }
+
+            res.json({
+                data: recordsets
+            });
+        });
+
+    });
+});
+
+
 
 
 
