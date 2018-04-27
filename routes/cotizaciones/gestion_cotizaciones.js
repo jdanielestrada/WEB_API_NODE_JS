@@ -178,7 +178,8 @@ router.get('/GET_AUTENTICAR_USUSARIO/:usuario/:password', function (req, res, ne
             }
 
             res.json({
-                data: recordsets
+                data: recordsets,
+                'MSG': request.parameters.MSG.value
             });
         });
 
