@@ -87,7 +87,7 @@ router.get('/get_tipos_proyectos', function (req, res, next) {
 
 //CONSULTA LOS PRODUCTOS DESARROLLADOS PARA LLENAR EL COMBO DE BUSQUEDA
 
-router.get('/GET_PRODUCTOS_DESARROLLADOS', function (req, res, next) {
+router.get('/get_productos_desarrollados', function (req, res, next) {
     //  console.log(req.params);
      //return;
      config.configBD3.database = CONSTANTES.RTABD;
@@ -119,7 +119,7 @@ router.get('/GET_PRODUCTOS_DESARROLLADOS', function (req, res, next) {
 
 //CONSULTA EL PRODUCTO DESARROLLADO CON SUSMATERIALES FILTRANDO POR EL PARAMETRO ID_ITEM
 
-router.get('/GET_MATERIALES_PRODUCTOS_DESARROLLADOS/:idItemReferencia', function (req, res, next) {
+router.get('/get_materiales_productos_desarrollados/:idItemReferencia', function (req, res, next) {
       console.log(req.params);
 
      config.configBD3.database = CONSTANTES.RTABD;
@@ -152,7 +152,7 @@ router.get('/GET_MATERIALES_PRODUCTOS_DESARROLLADOS/:idItemReferencia', function
 
 //AUTENTICAR USUARIO
 
-router.post('/GET_AUTENTICAR_USUSARIO', function (req, res, next) {
+router.post('/get_autenticar_ususario', function (req, res, next) {
     console.log(req.body);
 
     config.configBD3.database = CONSTANTES.RTABD;
