@@ -167,7 +167,7 @@ router.post('/get_autenticar_ususario', function (req, res, next) {
         // Stored Procedure
         var request = new sql.Request(connection);
         request.verbose = true;
-        request.input("IN_USUARIO", sql.VarChar(30), req.body.usuario);
+        request.input("IN_USUARIO", sql.VarChar(30), req.body.usuario.toUpperCase());
         request.input("IN_PASSWORD", sql.VarChar(30), req.body.password);
 
         request.output('MSG', sql.VarChar);
