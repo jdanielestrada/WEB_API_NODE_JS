@@ -152,8 +152,8 @@ router.get('/GET_MATERIALES_PRODUCTOS_DESARROLLADOS/:idItemReferencia', function
 
 //AUTENTICAR USUARIO
 
-router.get('/GET_AUTENTICAR_USUSARIO/:usuario/:password', function (req, res, next) {
-    console.log(req.params);
+router.post('/GET_AUTENTICAR_USUSARIO', function (req, res, next) {
+    console.log(req.body);
 
     config.configBD3.database = CONSTANTES.RTABD;
     console.log(config.configBD3.database);
@@ -167,8 +167,8 @@ router.get('/GET_AUTENTICAR_USUSARIO/:usuario/:password', function (req, res, ne
         // Stored Procedure
         var request = new sql.Request(connection);
         request.verbose = true;
-        request.input("IN_USUARIO", sql.VarChar(30), req.params.usuario);
-        request.input("IN_PASSWORD", sql.VarChar(30), req.params.password);
+        request.input("IN_USUARIO", sql.VarChar(30), req.body.usuario);
+        request.input("IN_PASSWORD", sql.VarChar(30), req.body.password);
 
         request.output('MSG', sql.VarChar);
 
