@@ -150,6 +150,147 @@ router.get('/get_materiales_productos_desarrollados/:idItemReferencia', function
 
 
 
+
+//GET CONSECUTO COTIZACION 
+
+router.post('/generar_consecutivo_cotizacion/:tipo_cotizacion/:idUsuario', function (req, res, next) {
+
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            return res.json(err);
+        }
+        // Stored Procedure
+        var request = new sql.Request(connection);
+        request.verbose = false;
+        request.input("IN_TIPO_COTIZACION", sql.VarChar, req.params.tipoCotizacion);
+        request.input("IN_ID_USUARIO", sql.Int, req.params.idUsuario);
+        request.output("MSG", sql.VarChar);
+        request.output("OUT_CS_COTIZACION", sql.Int);
+
+        request.execute('RTA.GENERAR_CONSECUTIVO_COTIZACION', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json(err);
+                return;
+            }
+
+            res.json({
+                data: recordsets,
+                'MSG': request.parameters.MSG.value,
+                'OUT_CS_COTIZACION': request.parameters.OUT_CS_COTIZACION.value,
+            });
+        });
+
+    });
+
+});
+
+
+
+//INSERTAR ENCABEZADO COTIZACION 
+
+
+
+
+router.post('/insert_h_Cotizacion', function (req, res, next) {
+
+    console.log(req.body);
+
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+    });
+    var transaction = new sql.Transaction(connection);
+
+    transaction.begin(function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            //res.status(err.status || 500);
+            res.json({
+                error: err,
+                MSG: err.message
+            });
+        }
+
+        // Stored Procedure 
+        var request = new sql.Request(transaction);
+
+        request.verbose = true;
+        request.input("IN_DOCUMENTO_CLIENTE", sql.VarChar, req.body.documento_cliente);
+        request.input("IN_NOMBRES_CLIENTE", sql.VarChar, req.body.nombres_cliente);
+        request.input("IN_APELLIDOS_CLIENTE", sql.VarChar, req.body.apellidos_cliente);
+        request.input("IN_TIPO_COTIZACION", sql.VarChar, req.body.tipo_cotizacion);
+        request.input('IN_FECHA', sql.DateTime, new Date(req.body.fecha_cotizacion));
+        request.input("IN_ID_USUARIO", sql.Int, req.body.cs_id_usuario);
+        request.input("IN_CS_COTIZACION", sql.BigInt, req.body.cs_cotizacion);
+
+        request.output("MSG", sql.VarChar);
+
+        request.execute('RTA.INSERT_H_COTIZACION', function (err, recordsets, returnValue)
+        {
+            if (err) {
+                res.json({
+                    error: err,
+                    MSG: err.message
+                });
+                transaction.rollback(function (err) {
+                    // ... error checks
+                    return;
+                });
+            } else {
+
+                if (request.parameters.MSG.value != "GUARDADO") {
+                    //res.status(500);
+                    res.json({
+                        error: "err",
+                        MSG: request.parameters.MSG.value
+
+                    });
+                    transaction.rollback(function (err2) {
+                        // ... error checks
+
+                    });
+                } else {
+                    /*hacemos commit*/
+                    transaction.commit(function (err, recordset) {
+                        // ... error checks
+                        res.json({
+                            data: [],
+                            'MSG': "GUARDADO"
+
+                        });
+
+                        console.log("Transaction commited.");
+
+                    });
+
+                }
+
+            }
+
+        });
+
+    });
+
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 //AUTENTICAR USUARIO
 
 router.post('/get_autenticar_ususario', function (req, res, next) {
