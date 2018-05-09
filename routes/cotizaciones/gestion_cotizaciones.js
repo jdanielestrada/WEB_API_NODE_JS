@@ -150,8 +150,41 @@ router.get('/get_materiales_productos_desarrollados/:idItemReferencia', function
 
 
 
+//CONSULTA LAS COTIZACIONES REALIZADAS POR UN USUARIO
+
+router.get('/get_cotizaciones_by_usuario/:idUsuario', function (req, res, next) {
+    console.log(req.params);
+
+   config.configBD3.database = CONSTANTES.RTABD;
+   console.log(config.configBD3.database);
+   var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+       // ... error checks
+       if (err) {
+           console.error(err);
+           res.json(err);
+       }
+
+       // Stored Procedure
+       var request = new sql.Request(connection);
+       request.verbose = true;
+       request.input("IN_ID_USUARIO", sql.Int, req.params.idUsuario);
+       request.execute('RTA.GET_COTIZACIONES_BY_USUARIO', function (err, recordsets, returnValue) {
+           if (err) {
+               res.json(err);
+           }
+
+           res.json({
+               data: recordsets
+           });
+       });
+
+   });
+});
+
+
 
 //GET CONSECUTO COTIZACION 
+
 
 router.post('/generar_consecutivo_cotizacion/:tipo_cotizacion/:idUsuario', function (req, res, next) {
 
@@ -166,7 +199,7 @@ router.post('/generar_consecutivo_cotizacion/:tipo_cotizacion/:idUsuario', funct
         // Stored Procedure
         var request = new sql.Request(connection);
         request.verbose = false;
-        request.input("IN_TIPO_COTIZACION", sql.VarChar, req.params.tipoCotizacion);
+        request.input("IN_TIPO_COTIZACION", sql.VarChar, req.params.tipo_cotizacion);
         request.input("IN_ID_USUARIO", sql.Int, req.params.idUsuario);
         request.output("MSG", sql.VarChar);
         request.output("OUT_CS_COTIZACION", sql.Int);
@@ -217,7 +250,7 @@ router.post('/insert_h_Cotizacion', function (req, res, next) {
             });
         }
 
-        // Stored Procedure 
+        // Stored Procedure
         var request = new sql.Request(transaction);
 
         request.verbose = true;
