@@ -170,7 +170,7 @@ router.get('/get_cotizaciones_by_usuario/:idUsuario', function (req, res, next) 
        request.input("IN_ID_USUARIO", sql.Int, req.params.idUsuario);
        request.execute('RTA.GET_COTIZACIONES_BY_USUARIO', function (err, recordsets, returnValue) {
            if (err) {
-               res.json(err);
+              return res.json(err);
            }
 
            res.json({
@@ -185,7 +185,7 @@ router.get('/get_cotizaciones_by_usuario/:idUsuario', function (req, res, next) 
 
 //CONSULTA EL DETALLE DE CADA ITEM DE UNA COTIZACION 
 
-router.get('/getDetalleCotizacion/:csIdCotizacion', function (req, res, next) {
+router.get('/get_detalle_cotizacion/:csIdCotizacion', function (req, res, next) {
     console.log(req.params);
 
     config.configBD3.database = CONSTANTES.RTABD;
