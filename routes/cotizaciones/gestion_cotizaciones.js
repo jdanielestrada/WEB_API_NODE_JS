@@ -183,6 +183,43 @@ router.get('/get_cotizaciones_by_usuario/:idUsuario', function (req, res, next) 
 
 
 
+//CONSULTA EL DETALLE DE CADA ITEM DE UNA COTIZACION 
+
+router.get('/getDetalleCotizacion/:csIdCotizacion', function (req, res, next) {
+    console.log(req.params);
+
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            res.json(err);
+        }
+
+        // Stored Procedure
+        var request = new sql.Request(connection);
+        request.verbose = true;
+        request.input("IN_CS_ID_COTIZACION", sql.BigInt, req.params.csIdCotizacion);
+        request.execute('RTA.GET_DETALLE_COTIZACION', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json(err);
+            }
+
+            res.json({
+                data: recordsets
+            });
+        });
+
+    });
+});
+
+
+
+
+
+
+
 //GET CONSECUTO COTIZACION 
 
 
