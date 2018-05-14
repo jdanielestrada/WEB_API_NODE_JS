@@ -1,30 +1,19 @@
-﻿var express = require('express');
-var router = express.Router();
-
-
-var email = require('emailjs');
-var pdf = require('html-pdf');
-var TYPES = require('tedious').TYPES;
-var _ = require('underscore')._;
-var fs = require('fs');
-var mkpath = require('mkpath');
-var multipart = require('connect-multiparty');
-var multipartMiddleware = multipart();
-
-var sqlServerConnection = require('../../utils/sqlServerConnection');
+﻿var express    = require('express');
+var router     = express.Router();
+var email      = require('emailjs');
+var pdf        = require('html-pdf');
+var _          = require('underscore')._;
+var fs         = require('fs');
 var CONSTANTES = require('../../utils/constantes');
-var crypto = require('crypto');
-var config = require('../../utils/config');
-var utils = require('../../utils/utils');
-var sql = require('mssql');
-
-var server = config.serverEmail;
-var pathBaseGestionDocumental = "./public/uploads";
-var async = require('async');
+var crypto     = require('crypto');
+var config     = require('../../utils/config');
+var utils      = require('../../utils/utils');
+var sql        = require('mssql');
+var async      = require('async');
 
 //PRUEBA SERVIDOR 37
 router.get('/prueba', function (req, res, next) {
-   //  console.log(req.params);
+    //  console.log(req.params);
     //return;
     config.configBD2.database = CONSTANTES.POSDB;
     console.log(config.configBD2.database);
@@ -53,138 +42,126 @@ router.get('/prueba', function (req, res, next) {
 });
 
 //PRUEBA SERVIDOR 192.168.1.20 RTA
-
 router.get('/get_tipos_proyectos', function (req, res, next) {
     //  console.log(req.params);
-     //return;
-     config.configBD3.database = CONSTANTES.RTABD;
-     console.log(config.configBD3.database);
-     var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
-         // ... error checks
-         if (err) {
-             console.error(err);
-             res.json(err);
-         }
- 
-         // Stored Procedure
-         var request = new sql.Request(connection);
-         request.verbose = true;
- 
-         request.execute('RTA.SSP_GET_PRUEBA', function (err, recordsets, returnValue) {
-             if (err) {
-                 res.json(err);
-             }
- 
-             res.json({
-                 data: recordsets
-             });
-         });
- 
-     });
- });
+    //return;
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            res.json(err);
+        }
 
+        // Stored Procedure
+        var request = new sql.Request(connection);
+        request.verbose = true;
 
+        request.execute('RTA.SSP_GET_PRUEBA', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json(err);
+            }
+
+            res.json({
+                data: recordsets
+            });
+        });
+
+    });
+});
 
 //CONSULTA LOS PRODUCTOS DESARROLLADOS PARA LLENAR EL COMBO DE BUSQUEDA
-
 router.get('/get_productos_desarrollados', function (req, res, next) {
     //  console.log(req.params);
-     //return;
-     config.configBD3.database = CONSTANTES.RTABD;
-     console.log(config.configBD3.database);
-     var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
-         // ... error checks
-         if (err) {
-             console.error(err);
-             res.json(err);
-         }
- 
-         // Stored Procedure
-         var request = new sql.Request(connection);
-         request.verbose = true;
- 
-         request.execute('RTA.GET_PRODUCTOS_DESARROLLADOS', function (err, recordsets, returnValue) {
-             if (err) {
-                 res.json(err);
-             }
- 
-             res.json({
-                 data: recordsets
-             });
-         });
- 
-     });
- });
+    //return;
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            res.json(err);
+        }
 
+        // Stored Procedure
+        var request = new sql.Request(connection);
+        //request.verbose = true;
+
+        request.execute('RTA.GET_PRODUCTOS_DESARROLLADOS', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json(err);
+            }
+
+            res.json({
+                data: recordsets
+            });
+        });
+
+    });
+});
 
 //CONSULTA EL PRODUCTO DESARROLLADO CON SUSMATERIALES FILTRANDO POR EL PARAMETRO ID_ITEM
-
 router.get('/get_materiales_productos_desarrollados/:idItemReferencia', function (req, res, next) {
-      console.log(req.params);
+    console.log(req.params);
 
-     config.configBD3.database = CONSTANTES.RTABD;
-     console.log(config.configBD3.database);
-     var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
-         // ... error checks
-         if (err) {
-             console.error(err);
-             res.json(err);
-         }
- 
-         // Stored Procedure
-         var request = new sql.Request(connection);
-         request.verbose = true;
-         request.input("IN_ID_ITEM_REFERENCIA", sql.VarChar(6), req.params.idItemReferencia);
-         request.execute('RTA.GET_MATERIALES_PRODUCTOS_DESARROLLADOS', function (err, recordsets, returnValue) {
-             if (err) {
-                 res.json(err);
-             }
- 
-             res.json({
-                 data: recordsets
-             });
-         });
- 
-     });
- });
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            res.json(err);
+        }
 
+        // Stored Procedure
+        var request = new sql.Request(connection);
+        request.verbose = true;
+        request.input("IN_ID_ITEM_REFERENCIA", sql.VarChar(6), req.params.idItemReferencia);
+        request.execute('RTA.GET_MATERIALES_PRODUCTOS_DESARROLLADOS', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json(err);
+            }
 
+            res.json({
+                data: recordsets
+            });
+        });
+
+    });
+});
 
 //CONSULTA LAS COTIZACIONES REALIZADAS POR UN USUARIO
-
 router.get('/get_cotizaciones_by_usuario/:idUsuario', function (req, res, next) {
     console.log(req.params);
 
-   config.configBD3.database = CONSTANTES.RTABD;
-   console.log(config.configBD3.database);
-   var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
-       // ... error checks
-       if (err) {
-           console.error(err);
-           res.json(err);
-       }
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            res.json(err);
+        }
 
-       // Stored Procedure
-       var request = new sql.Request(connection);
-       request.verbose = true;
-       request.input("IN_ID_USUARIO", sql.Int, req.params.idUsuario);
-       request.execute('RTA.GET_COTIZACIONES_BY_USUARIO', function (err, recordsets, returnValue) {
-           if (err) {
-              return res.json(err);
-           }
+        // Stored Procedure
+        var request = new sql.Request(connection);
+        request.verbose = true;
+        request.input("IN_ID_USUARIO", sql.Int, req.params.idUsuario);
+        request.execute('RTA.GET_COTIZACIONES_BY_USUARIO', function (err, recordsets, returnValue) {
+            if (err) {
+                return res.json(err);
+            }
 
-           res.json({
-               data: recordsets
-           });
-       });
+            res.json({
+                data: recordsets
+            });
+        });
 
-   });
+    });
 });
 
-
-
 //CONSULTA EL DETALLE DE CADA ITEM DE UNA COTIZACION 
-
 router.get('/get_detalle_cotizacion/:csIdCotizacion', function (req, res, next) {
     console.log(req.params);
 
@@ -214,15 +191,7 @@ router.get('/get_detalle_cotizacion/:csIdCotizacion', function (req, res, next) 
     });
 });
 
-
-
-
-
-
-
 //GET CONSECUTO COTIZACION 
-
-
 router.post('/generar_consecutivo_cotizacion/:tipo_cotizacion/:idUsuario', function (req, res, next) {
 
     config.configBD3.database = CONSTANTES.RTABD;
@@ -258,13 +227,7 @@ router.post('/generar_consecutivo_cotizacion/:tipo_cotizacion/:idUsuario', funct
 
 });
 
-
-
 //INSERTAR ENCABEZADO COTIZACION 
-
-
-
-
 router.post('/insert_h_Cotizacion', function (req, res, next) {
 
     console.log(req.body);
@@ -298,11 +261,12 @@ router.post('/insert_h_Cotizacion', function (req, res, next) {
         request.input('IN_FECHA', sql.DateTime, new Date(req.body.fecha_cotizacion));
         request.input("IN_ID_USUARIO", sql.Int, req.body.cs_id_usuario);
         request.input("IN_CS_COTIZACION", sql.BigInt, req.body.cs_cotizacion);
+        request.input("IN_EMAIL_CLIENTE", sql.BigInt, req.body.email);
 
+        request.output("OUT_CS_H_COTIZACION", sql.VarChar);
         request.output("MSG", sql.VarChar);
 
-        request.execute('RTA.INSERT_H_COTIZACION', function (err, recordsets, returnValue)
-        {
+        request.execute('RTA.INSERT_H_COTIZACION', function (err, recordsets, returnValue) {
             if (err) {
                 res.json({
                     error: err,
@@ -314,7 +278,7 @@ router.post('/insert_h_Cotizacion', function (req, res, next) {
                 });
             } else {
 
-                if (request.parameters.MSG.value != "GUARDADO") {
+                if (request.parameters.MSG.value != "OK") {
                     //res.status(500);
                     res.json({
                         error: "err",
@@ -331,38 +295,172 @@ router.post('/insert_h_Cotizacion', function (req, res, next) {
                         // ... error checks
                         res.json({
                             data: [],
-                            'MSG': "GUARDADO"
-
+                            'MSG': request.parameters.MSG.value,
+                            'OUT_CS_H_COTIZACION': request.parameters.MSG.value
                         });
 
                         console.log("Transaction commited.");
-
                     });
-
                 }
-
             }
-
         });
-
     });
-
 });
 
+router.post('/insert_productos_cotizacion', function (req, res, next) {
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
 
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+    });
+    var transaction = new sql.Transaction(connection);
 
+    transaction.begin(function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            //res.status(err.status || 500);
+            res.json({
+                error: err,
+                MSG: err.message
+            });
+        }
 
+        // Stored Procedure
+        var request = new sql.Request(transaction);
+        request.verbose = true;
+        request.input("IN_CS_ID_COTIZACION", sql.BigInt, req.body.CS_H_COTIZACION);
+        request.input("IN_C_CIDIS", sql.VarChar, req.body.C_CIDIS);
+        request.input("IN_REFERENCIA_PT", sql.VarChar, req.body.ID_REFERENCIA);
+        request.input("IN_D_REFERENCIA_PT", sql.VarChar, req.body.DESCRIPCION);
+        request.input('IN_ID_ITEM', sql.VarChar, req.body.ID_ITEM);
+        request.input("IN_ID_PROCEDENCIA", sql.VarChar, req.body.ID_PROCEDENCIA);
+        request.input("IN_UNIDAD_MEDIDA", sql.VarChar, req.body.UNIDAD_MEDIDA);
+        request.input("IN_EMPAQUE_H", sql.Decimal(12, 2), req.body.EMPAQUE_H);
+        request.input("IN_EMPAQUE_W", sql.Decimal(12, 2), req.body.EMPAQUE_W);
+        request.input("IN_EMPAQUE_D", sql.Decimal(12, 2), req.body.EMPAQUE_D);
+        request.input("IN_CUBICAGE_C", sql.Decimal(12, 2), req.body.CUBICAGE_C);
+        request.input("IN_CUBICAGE_K", sql.Decimal(12, 2), req.body.CUBICAGE_K);
+        request.input("IN_MEDIDAS_PT", sql.VarChar, req.body.MEDIDAS_PT);
+        request.input("IN_COLOR", sql.VarChar, req.body.COLOR);
+        request.input("IN_CANTIDAD", sql.Decimal(24, 2), req.body.CANTIDAD);
+        request.input("IN_ULTIMO_COSTO", sql.Decimal(24, 2), req.body.ULTIMO_COSTO || 0);
+        request.input("IN_CANTIDAD_UC", sql.Decimal(24, 2), req.body.CANTIDAD_UC || 0);
+        request.input("IN_VALOR_CLIENTE", sql.Decimal(24, 2), req.body.VALOR_CLIENTE || 0);
+        request.input("IN_MARGEN", sql.Decimal(10, 2), req.body.MARGEN);
+        request.input("IN_LOG_USER", sql.Int, req.body.ID_USUARIO);
 
+        request.output("OUT_CS_ID_DT_COTIZACION", sql.VarChar);
+        request.output("MSG", sql.VarChar);
 
+        request.execute('RTA.SSP_INSERT_DT_COTIZACION', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json({
+                    error: err,
+                    MSG: err.message
+                });
+                transaction.rollback(function (err) {
+                    // ... error checks
+                    return;
+                });
+            } else {
 
+                if (request.parameters.MSG.value != "OK") {
+                    //res.status(500);
+                    res.json({
+                        error: "err",
+                        MSG: request.parameters.MSG.value
 
+                    });
+                    transaction.rollback(function (err2) {
+                        // ... error checks
 
+                    });
+                } else {
+                    /*hacemos commit*/
+                    transaction.commit(function (err, recordset) {
+                        // ... error checks
+                        res.json({
+                            data: [],
+                            'MSG': request.parameters.MSG.value,
+                            OUT_CS_ID_DT_COTIZACION: request.parameters.OUT_CS_ID_DT_COTIZACION.value
+                        });
 
+                        console.log("Transaction commited.");
+                    });
+                }
+            }
+        });
+    });
+});
 
+router.post('/delete_producto_dt_cotizacion', function (req, res, next) {
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
 
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+    });
+    var transaction = new sql.Transaction(connection);
+
+    transaction.begin(function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            //res.status(err.status || 500);
+            res.json({
+                error: err,
+                MSG: err.message
+            });
+        }
+
+        // Stored Procedure
+        var request = new sql.Request(transaction);
+        request.verbose = true;
+        request.input("IN_CS_ID_DT_COTIZACION", sql.BigInt, req.body.CS_ID_DT_COTIZACION);
+
+        request.output("MSG", sql.VarChar);
+
+        request.execute('RTA.SSP_DELETE_PRODUCTO_DT_COTIZACION', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json({
+                    error: err,
+                    MSG: err.message
+                });
+                transaction.rollback(function (err) {
+                    // ... error checks
+                    return;
+                });
+            } else {
+
+                if (request.parameters.MSG.value != "OK") {
+                    //res.status(500);
+                    res.json({
+                        error: "err",
+                        MSG: request.parameters.MSG.value
+
+                    });
+                    transaction.rollback(function (err2) {
+                        // ... error checks
+
+                    });
+                } else {
+                    /*hacemos commit*/
+                    transaction.commit(function (err, recordset) {
+                        // ... error checks
+                        res.json({
+                            data: [],
+                            'MSG': request.parameters.MSG.value
+                        });
+
+                        console.log("Transaction commited.");
+                    });
+                }
+            }
+        });
+    });
+});
 
 //AUTENTICAR USUARIO
-
 router.post('/get_autenticar_ususario', function (req, res, next) {
     console.log(req.body);
 
@@ -396,9 +494,5 @@ router.post('/get_autenticar_ususario', function (req, res, next) {
 
     });
 });
-
-
-
-
 
 module.exports = router;
