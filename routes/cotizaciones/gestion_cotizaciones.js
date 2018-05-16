@@ -296,7 +296,7 @@ router.post('/insert_h_Cotizacion', function (req, res, next) {
                         res.json({
                             data: [],
                             'MSG': request.parameters.MSG.value,
-                            'OUT_CS_H_COTIZACION': request.parameters.MSG.value
+                            'OUT_CS_H_COTIZACION': request.parameters.OUT_CS_H_COTIZACION.value
                         });
 
                         console.log("Transaction commited.");
@@ -377,17 +377,81 @@ router.post('/insert_productos_cotizacion', function (req, res, next) {
 
                     });
                 } else {
-                    /*hacemos commit*/
-                    transaction.commit(function (err, recordset) {
-                        // ... error checks
-                        res.json({
-                            data: [],
-                            'MSG': request.parameters.MSG.value,
-                            OUT_CS_ID_DT_COTIZACION: request.parameters.OUT_CS_ID_DT_COTIZACION.value
+
+                    var cantInsumosProducto = req.body.data_insumo_producto.length;
+
+                    /* almacenamos las asignaciones a los operarios del corte para la op seleccionada */
+                    async.each(req.body.data_insumo_producto, function (item, callback) {
+                        
+                        var requestDt = new sql.Request(transaction);
+                        requestDt.verbose = false;
+                        requestDt.input("IN_CS_ID_DT_COTIZACION", sql.BigInt, request.parameters.OUT_CS_ID_DT_COTIZACION.value);
+                        requestDt.input("IN_ID_COD_ITEM_INS", sql.VarChar, item.ID_COD_ITEM_C);
+                        requestDt.input("IN_REFERENCIA_INS", sql.VarChar, item.ID_REFER_C);
+                        requestDt.input("IN_D_REFERENCIA_INS", sql.VarChar, item.DESCRIPCION_C);
+                        requestDt.input("IN_UNIDAD_MEDIDA_INS", sql.VarChar, item.ID_UNIMED_C);
+                        requestDt.input("IN_CANTIDAD_BASE", sql.Decimal(20, 5), item.CANTIDAD_BASE);
+                        requestDt.input("IN_CANTIDAD_REQUERIDA", sql.Decimal(20, 5), item.CANTIDAD_REQUERIDA);
+                        requestDt.input("IN_CANTIDAD_SOLICITADA", sql.Decimal(20, 5), item.CANTIDAD_SOLICITADA);
+                        requestDt.input("IN_BODEGA_CONSUMO", sql.VarChar, item.BODEGA_CONSUMO);
+                        requestDt.input("IN_COSTO_PROM_FINAL", sql.Decimal(20, 5), item.COSTO_PROM_FINAL);
+                        
+                        requestDt.output("MSG", sql.VarChar);
+
+                        requestDt.execute('RTA.SSP_INSERT_MV_INSUMOS_COTIZACIONES', function (err, recordsets, returnValue) {
+                            if (err) {
+                                // ... error checks
+                                callback(err.message);
+
+                            } else if (requestDt.parameters.MSG.value !== "OK") {
+                                callback(requestDt.parameters.MSG.value);
+                            } else {
+                                cantInsumosProducto--;
+                                callback();
+                            }
+
+                        });
+                    },
+                        function (err) {
+
+                            if (err) {
+                                transaction.rollback(function (err2) {
+                                });
+                                return res.json({
+                                    error: "err",
+                                    MSG: err
+                                });
+
+                            } else {
+
+                                if (cantInsumosProducto === 0) {
+
+                                    /*hacemos commit*/
+                                    transaction.commit(function (err, recordset) {
+                                        // ... error checks
+                                        res.json({
+                                            data: [],
+                                            'MSG': request.parameters.MSG.value,
+                                            OUT_CS_ID_DT_COTIZACION: request.parameters.OUT_CS_ID_DT_COTIZACION.value
+                                        });
+
+                                        console.log("Transaction commited.");
+                                    });
+                                }
+                            }
                         });
 
-                        console.log("Transaction commited.");
-                    });
+                    ///*hacemos commit*/
+                    //transaction.commit(function (err, recordset) {
+                    //    // ... error checks
+                    //    res.json({
+                    //        data: [],
+                    //        'MSG': request.parameters.MSG.value,
+                    //        OUT_CS_ID_DT_COTIZACION: request.parameters.OUT_CS_ID_DT_COTIZACION.value
+                    //    });
+
+                    //    console.log("Transaction commited.");
+                    //});
                 }
             }
         });
