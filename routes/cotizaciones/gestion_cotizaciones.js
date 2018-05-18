@@ -458,6 +458,142 @@ router.post('/insert_productos_cotizacion', function (req, res, next) {
     });
 });
 
+
+
+//INSERTAR DATA COSTOS MDC 
+
+
+router.post('/insert_data_costos_mdc', function (req, res, next) {
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+    });
+    var transaction = new sql.Transaction(connection);
+
+    transaction.begin(function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            //res.status(err.status || 500);
+            res.json({
+                error: err,
+                MSG: err.message
+            });
+        }
+
+  
+        // Stored Procedure
+        var request = new sql.Request(transaction);
+        request.verbose = true;
+        //request.input("IN_CS_ID_COTIZACION", sql.BigInt, req.body.dataHeader.CS_H_COTIZACION);
+        request.input("IN_LOG_USER", sql.Int, req.body.dataHeader.csIdUsuario);
+
+        request.output("OUT_CS_ID_COSTOS_MDC", sql.BigInt);
+        request.output("MSG", sql.VarChar);
+
+        request.execute('RTA.SSP_INSERT_H_COSTOS_PRODUCTOS_MDC', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json({
+                    error: err,
+                    MSG: err.message
+                });
+                transaction.rollback(function (err) {
+                    // ... error checks
+                    return;
+                });
+            } else {
+
+                if (request.parameters.MSG.value != "OK") {
+                    //res.status(500);
+                    res.json({
+                        error: "err",
+                        MSG: request.parameters.MSG.value
+
+                    });
+                    transaction.rollback(function (err2) {
+                        // ... error checks
+
+                    });
+                } else {
+
+                    var cant = req.body.dataDetalle.length;
+
+                    /* almacenamos las asignaciones a los operarios del corte para la op seleccionada */
+                    async.each(req.body.dataDetalle, function (item, callback) {
+
+                        var requestDt = new sql.Request(transaction);
+                        requestDt.verbose = false;
+                        requestDt.input("IN_CS_ID_COSTOS_MDC", sql.BigInt, request.parameters.OUT_CS_ID_COSTOS_MDC.value);
+                        requestDt.input("IN_REFERENCIA", sql.VarChar, item.REFERENCIA);
+                        requestDt.input("IN_D_REFERENCIA", sql.VarChar, item.DESCRIPCION);
+                        requestDt.input("IN_LOG_USER", sql.Int, req.body.dataHeader.csIdUsuario);
+                        //requestDt.input("IN_UNIDAD_MEDIDA_INS", sql.VarChar, item.ID_UNIMED_C);
+                        requestDt.input("IN_COSTO_MDC", sql.Decimal(20, 5), item.COSTOMDC);
+
+                        requestDt.output("MSG", sql.VarChar);
+
+                        requestDt.execute('RTA.SSP_INSERT_MV_COSTOS_PRODUCTOS_MDC', function (err, recordsets, returnValue) {
+                            if (err) {
+                                // ... error checks
+                                callback(err.message);
+
+                            } else if (requestDt.parameters.MSG.value !== "OK") {
+                                callback(requestDt.parameters.MSG.value);
+                            } else {
+                                cant--;
+                                callback();
+                            }
+
+                        });
+                    },
+                        function (err) {
+
+                            if (err) {
+                                transaction.rollback(function (err2) {
+                                });
+                                return res.json({
+                                    error: "err",
+                                    MSG: err
+                                });
+
+                            } else {
+
+                                if (cant === 0) {
+
+                                    /*hacemos commit*/
+                                    transaction.commit(function (err, recordset) {
+                                        // ... error checks
+                                        res.json({
+                                            data: [],
+                                            'MSG': request.parameters.MSG.value,
+                                             OUT_CS_ID_COSTOS_MDC: request.parameters.OUT_CS_ID_COSTOS_MDC.value
+                                        });
+
+                                        console.log("Transaction commited.");
+                                    });
+                                }
+                            }
+                        });
+
+                    ///*hacemos commit*/
+                    //transaction.commit(function (err, recordset) {
+                    //    // ... error checks
+                    //    res.json({
+                    //        data: [],
+                    //        'MSG': request.parameters.MSG.value,
+                    //        OUT_CS_ID_DT_COTIZACION: request.parameters.OUT_CS_ID_DT_COTIZACION.value
+                    //    });
+
+                    //    console.log("Transaction commited.");
+                    //});
+                }
+            }
+        });
+    });
+});
+
+
 router.post('/delete_producto_dt_cotizacion', function (req, res, next) {
     config.configBD3.database = CONSTANTES.RTABD;
     console.log(config.configBD3.database);
