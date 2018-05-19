@@ -36,4 +36,4 @@ io.on('connection', function(client) {
 
 //var port = normalizePort(process.env.PORT || '1600');
 //app.set('port', process.env.PORT);
-app.listen(process.env.PORT || '1600');
+app.listen('1600');//process.env.PORT || 
