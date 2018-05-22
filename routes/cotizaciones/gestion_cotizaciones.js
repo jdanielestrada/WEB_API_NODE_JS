@@ -270,7 +270,7 @@ router.post('/insert_h_Cotizacion', function (req, res, next) {
             if (err) {
                 res.json({
                     error: err,
-                    MSG: err.message
+                    MSG: err.message 
                 });
                 transaction.rollback(function (err) {
                     // ... error checks
