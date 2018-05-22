@@ -711,6 +711,43 @@ router.post('/update_estado_h_cotizaciones', function (req, res, next) {
     });
 });
 
+
+
+router.get('/get_costos_productos_insumos_rta_mdc', function (req, res, next) {
+    //  console.log(req.params);
+    //return;
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            res.json(err);
+        }
+
+        // Stored Procedure
+        var request = new sql.Request(connection);
+        //request.verbose = true;
+
+        request.execute('RTA.GET_COSTOS_INSUMOS_RTA_MDC', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json(err);
+            }
+
+            res.json({
+                data: recordsets
+            });
+        });
+
+    });
+});
+
+
+
+
+
+
+
 //AUTENTICAR USUARIO
 router.post('/get_autenticar_ususario', function (req, res, next) {
     console.log(req.body);
