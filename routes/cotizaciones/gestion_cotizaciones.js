@@ -511,8 +511,9 @@ router.post('/insert_data_costos_mdc', function (req, res, next) {
                         requestDt.input("IN_CS_ID_COSTOS_MDC", sql.BigInt, request.parameters.OUT_CS_ID_COSTOS_MDC.value);
                         requestDt.input("IN_REFERENCIA", sql.VarChar, item.REFERENCIA);
                         requestDt.input("IN_D_REFERENCIA", sql.VarChar, item.DESCRIPCION);
-                        requestDt.input("IN_LOG_USER", sql.Int, req.body.dataHeader.csIdUsuario);
-                        //requestDt.input("IN_UNIDAD_MEDIDA_INS", sql.VarChar, item.ID_UNIMED_C);
+                        requestDt.input("IN_UM", sql.VarChar, item.UNIMED);
+                        requestDt.input("IN_LOG_USER", sql.Int, req.body.dataHeader.csIdUsuario); 
+                 
                         requestDt.input("IN_COSTO_MDC", sql.Decimal(20, 5), item.COSTOMDC);
 
                         requestDt.output("MSG", sql.VarChar);
