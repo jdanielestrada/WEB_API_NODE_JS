@@ -997,4 +997,91 @@ router.post('/editar_producto_dt_cotizacion', function (req, res, next) {
         });
     });
 });
+
+
+
+
+
+
+
+router.post('/update_costo_mdc', function (req, res, next) {
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+    });
+    var transaction = new sql.Transaction(connection);
+
+    transaction.begin(function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            //res.status(err.status || 500);
+            res.json({
+                error: err,
+                MSG: err.message
+            });
+        }
+
+        // Stored Procedure
+        var request = new sql.Request(transaction);
+        //request.verbose = true;
+        request.input("IN_CS_ID", sql.BigInt, req.body.cdIdCosto);
+        request.input("IN_COSTO_MDC", sql.Decimal(24,4), req.body.ESTADO_COTIZACION);
+        request.input("IN_UNIDAD_MEDIDA", sql.VarChar, req.body.unidadMededida);
+
+        request.output("MSG", sql.VarChar);
+
+        request.execute('RTA.SSP_UPDATE_COSTO_MDC', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json({
+                    error: err,
+                    MSG: err.message
+                });
+                transaction.rollback(function (err) {
+                    // ... error checks
+                    return;
+                });
+            } else {
+
+                if (request.parameters.MSG.value != "OK") {
+                    //res.status(500);
+                    res.json({
+                        error: "err",
+                        MSG: request.parameters.MSG.value
+
+                    });
+                    transaction.rollback(function (err2) {
+                        // ... error checks
+
+                    });
+                } else {
+                    /*hacemos commit*/
+                    transaction.commit(function (err, recordset) {
+                        // ... error checks
+                        res.json({
+                            data: [],
+                            'MSG': request.parameters.MSG.value
+                        });
+
+                        console.log("Transaction commited.");
+                    });
+                }
+            }
+        });
+    });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 module.exports = router;
