@@ -470,7 +470,7 @@ router.post('/insert_data_costos_mdc', function (req, res, next) {
         // Stored Procedure
         var request = new sql.Request(transaction);
         //request.verbose = true;
-        //request.input("IN_CS_ID_COTIZACION", sql.BigInt, req.body.dataHeader.CS_H_COTIZACION);
+        request.input("IN_DESCRIPCION_ARCHIVO", sql.VarChar, req.body.dataHeader.descripcionArchivo);
         request.input("IN_LOG_USER", sql.Int, req.body.dataHeader.csIdUsuario);
 
         request.output("OUT_CS_ID_COSTOS_MDC", sql.BigInt);
