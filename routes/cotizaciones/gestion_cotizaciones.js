@@ -1105,8 +1105,72 @@ router.get('/get_historico_costos_mdc', function (req, res, next) {
 
 
 
+router.post('/anular_costos_mdc', function (req, res, next) {
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
 
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+    });
+    var transaction = new sql.Transaction(connection);
 
+    transaction.begin(function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            //res.status(err.status || 500);
+            res.json({
+                error: err,
+                MSG: err.message
+            });
+        }
+
+        // Stored Procedure
+        var request = new sql.Request(transaction);
+        request.verbose = true;
+        request.input("IN_CS_ID_COSTO", sql.BigInt, req.body.cdIdCostos);
+        request.input("IN_USUARIO_UPDATE", sql.Int, req.body.csIdUsuario);
+
+        request.output("MSG", sql.VarChar);
+
+        request.execute('RTA.ANULAR_COSTOS_MDC', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json({
+                    error: err,
+                    MSG: err.message
+                });
+                transaction.rollback(function (err) {
+                    // ... error checks
+                    return;
+                });
+            } else {
+
+                if (request.parameters.MSG.value != "OK") {
+                    //res.status(500);
+                    res.json({
+                        error: "err",
+                        MSG: request.parameters.MSG.value
+
+                    });
+                    transaction.rollback(function (err2) {
+                        // ... error checks
+
+                    });
+                } else {
+                    /*hacemos commit*/
+                    transaction.commit(function (err, recordset) {
+                        // ... error checks
+                        res.json({
+                            data: [],
+                            'MSG': request.parameters.MSG.value
+                        });
+
+                        console.log("Transaction commited.");
+                    });
+                }
+            }
+        });
+    });
+});
 
 
 
