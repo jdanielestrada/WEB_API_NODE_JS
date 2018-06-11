@@ -1172,7 +1172,35 @@ router.post('/anular_costos_mdc', function (req, res, next) {
     });
 });
 
+router.get('/get_detalle_archivo_costos_mdc/:cs_id_costos', function (req, res, next) {
+    console.log(req.params);
 
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            res.json(err);
+        }
+
+        // Stored Procedure
+        var request = new sql.Request(connection);
+        //request.verbose = true;
+        request.input("IN_CS_COSTOS", sql.BigInt, req.params.cs_id_costos);
+
+        request.execute('RTA.GET_DETALLE_ARCHIVO_COSTOS_MDC', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json(err);
+            }
+
+            res.json({
+                data: recordsets
+            });
+        });
+
+    });
+});
 
 
 module.exports = router;
