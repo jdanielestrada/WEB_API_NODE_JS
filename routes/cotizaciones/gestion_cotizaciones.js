@@ -1091,14 +1091,14 @@ router.post('/update_costo_mdc', function (req, res, next) {
 });
 
 router.post('/insert_nuevo_producto',
-    multipartMiddleware, function (req, res, next) {
+    multipartMiddleware, function(req, res, next) {
 
         config.configBD2.database = CONSTANTES.RTABD;
-        var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+        var connection = new sql.Connection(utils.clone(config.configBD3), function(err) {
         });
         var transaction = new sql.Transaction(connection);
 
-        transaction.begin(function (err) {
+        transaction.begin(function(err) {
             // ... error checks
             if (err) {
                 console.error(err);
@@ -1116,14 +1116,14 @@ router.post('/insert_nuevo_producto',
 
             request.output("MSG", sql.VarChar);
 
-            request.execute('RTA.SSP_INSERT_NUEVO_PRODUCTO', function (err, recordsets, returnValue) {
+            request.execute('RTA.SSP_INSERT_NUEVO_PRODUCTO', function(err, recordsets, returnValue) {
                 if (err) {
                     res.json({
                         error: err,
                         MSG: err.message
                     });
 
-                    transaction.rollback(function (err) {
+                    transaction.rollback(function(err) {
                         // ... error checks
                         return;
                     });
@@ -1136,7 +1136,7 @@ router.post('/insert_nuevo_producto',
                             MSG: request.parameters.MSG.value
 
                         });
-                        transaction.rollback(function (err2) {
+                        transaction.rollback(function(err2) {
                             // ... error checks
                         });
                     } else {
@@ -1146,37 +1146,13 @@ router.post('/insert_nuevo_producto',
                         var length_files = 0;
                         var files = [];
 
-                        if (req.files != undefined && req.files.file != undefined) {
-                            files = [].concat(req.files.file);
-                            length_files = Object.keys(files).length;
-                        }
 
-                        /*al terminar de insertar los registros, realizo el almacenamiento del archivo*/
-                        if (length_files > 0) {
 
-                            var contador = Object.keys(files).length;
-                            files.forEach(function (item) {
-
-                                var ext = (item.name).split('.');
-                                ext = ext[ext.length - 1];
-
-                                var newPath = config.pathBaseGestionDocumental + config.rutaImgProductos + nombre_archivo + "." + ext;
-
-                                fs.exists(config.pathBaseGestionDocumental + config.rutaImgProductos, function (exists) {
-                                    if (exists) {
-                                        fs.readFile(item.path, function (err, data) {
-                                            var imageName = item.name;
-                                            /// If there's an error
-                                            if (!imageName) {
-                                                console.log("There was an error");
-                                                //res.redirect("/");
-                                                res.end();
-                                            } else {
 
                                                 console.log(newPath);
 
                                                 /*escribimos los archivos en la ruta indicada*/
-                                                fs.writeFile(newPath, data, function (err) {
+                                                fs.writeFile(newPath, data, function(err) {
                                                     if (err) {
                                                         console.error(err);
                                                         //res.status(err.status || 500); 
@@ -1184,48 +1160,17 @@ router.post('/insert_nuevo_producto',
                                                             error: err,
                                                             MSG: err.message
                                                         });
-                                                        transaction.rollback(function (err2) {
+                                                        transaction.rollback(function(err2) {
                                                         });
                                                     } else {
                                                         console.log("archivo almacenado!");
                                                         contador--;
                                                         console.log("contador " + contador);
 
-                                                        if (contador == 0) {
 
-                                                            /*luego de almacenar los archivos se realiza el envio de correos informando el despacho de los productos*/
-                                                            transaction.commit(function (err, recordset) {
-                                                                console.log("Transaction commited.");
-                                                            });
 
-                                                            //res.json({
-                                                            //    data: [],
-                                                            //    'MSG': "OK"
-                                                            //});
-                                                        }
-                                                    }
-                                                });
-                                            }
-                                        });
-                                    } else {
-                                        res.json({
-                                            data: recordsets,
-                                            'MSG': "No se encontró la ruta " + newPath
-                                        });
-                                        transaction.rollback(function (err2) {
-                                        });
-                                    }
-                                });
 
-                            }); /*fin forEach*/
-                        } else {
 
-                            res.json({
-                                data: [],
-                                'MSG': "No existe imagen para ser almacenada."
-                            });
-                            transaction.rollback(function (err2) {
-                            });
 
                             //res.json({
                             //    data: [],
