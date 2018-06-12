@@ -1,15 +1,17 @@
-﻿var express    = require('express');
-var router     = express.Router();
-var email      = require('emailjs');
-var pdf        = require('html-pdf');
-var _          = require('underscore')._;
-var fs         = require('fs');
+﻿var express = require('express');
+var router = express.Router();
+var email = require('emailjs');
+var pdf = require('html-pdf');
+var _ = require('underscore')._;
+var fs = require('fs');
 var CONSTANTES = require('../../utils/constantes');
-var crypto     = require('crypto');
-var config     = require('../../utils/config');
-var utils      = require('../../utils/utils');
-var sql        = require('mssql');
-var async      = require('async');
+var crypto = require('crypto');
+var config = require('../../utils/config');
+var utils = require('../../utils/utils');
+var sql = require('mssql');
+var async = require('async');
+var multipart = require('connect-multiparty');
+var multipartMiddleware = multipart();
 
 //PRUEBA SERVIDOR 37
 router.get('/prueba', function (req, res, next) {
@@ -270,7 +272,7 @@ router.post('/insert_h_Cotizacion', function (req, res, next) {
             if (err) {
                 res.json({
                     error: err,
-                    MSG: err.message 
+                    MSG: err.message
                 });
                 transaction.rollback(function (err) {
                     // ... error checks
@@ -346,8 +348,16 @@ router.post('/insert_productos_cotizacion', function (req, res, next) {
         request.input("IN_CANTIDAD", sql.Decimal(24, 2), req.body.CANTIDAD);
         request.input("IN_ULTIMO_COSTO", sql.Decimal(24, 2), req.body.ULTIMO_COSTO || 0);
         request.input("IN_CANTIDAD_UC", sql.Decimal(24, 2), req.body.CANTIDAD_UC || 0);
-        request.input("IN_VALOR_CLIENTE", sql.Decimal(24, 2), req.body.VALOR_CLIENTE || 0);
+        request.input("IN_VALOR_CLIENTE", sql.Decimal(24, 2), req.body.data_totales.costo_cliente || 0);
         request.input("IN_MARGEN", sql.Decimal(10, 2), req.body.MARGEN);
+
+        request.input("IN_PJ_DSCTO", sql.Decimal(10, 2), req.body.PJ_DSCTO);
+        request.input("IN_VR_DSCTO", sql.Decimal(24, 2), req.body.data_totales.descuento || 0);
+        request.input("IN_VARIACION", sql.Decimal(24, 2), req.body.data_totales.variacion || 0);
+        request.input("IN_MANO_OBRA", sql.Decimal(24, 2), req.body.data_totales.mano_obra || 0);
+        request.input("IN_CIF", sql.Decimal(24, 2), req.body.data_totales.cif || 0);
+        request.input("IN_TOTAL_PRODUCTO", sql.Decimal(24, 2), req.body.data_totales.total || 0);
+
         request.input("IN_LOG_USER", sql.Int, req.body.ID_USUARIO);
 
         request.output("OUT_CS_ID_DT_COTIZACION", sql.VarChar);
@@ -382,7 +392,7 @@ router.post('/insert_productos_cotizacion', function (req, res, next) {
 
                     /* almacenamos las asignaciones a los operarios del corte para la op seleccionada */
                     async.each(req.body.data_insumo_producto, function (item, callback) {
-                        
+
                         var requestDt = new sql.Request(transaction);
                         requestDt.verbose = false;
                         requestDt.input("IN_CS_ID_DT_COTIZACION", sql.BigInt, request.parameters.OUT_CS_ID_DT_COTIZACION.value);
@@ -395,7 +405,7 @@ router.post('/insert_productos_cotizacion', function (req, res, next) {
                         requestDt.input("IN_CANTIDAD_SOLICITADA", sql.Decimal(20, 5), item.CANTIDAD_SOLICITADA);
                         requestDt.input("IN_BODEGA_CONSUMO", sql.VarChar, item.BODEGA_CONSUMO);
                         requestDt.input("IN_COSTO_PROM_FINAL", sql.Decimal(20, 5), item.COSTO_PROM_FINAL);
-                        
+
                         requestDt.output("MSG", sql.VarChar);
 
                         requestDt.execute('RTA.SSP_INSERT_MV_INSUMOS_COTIZACIONES', function (err, recordsets, returnValue) {
@@ -466,7 +476,7 @@ router.post('/insert_data_costos_mdc', function (req, res, next) {
             });
         }
 
-  
+
         // Stored Procedure
         var request = new sql.Request(transaction);
         //request.verbose = true;
@@ -512,8 +522,8 @@ router.post('/insert_data_costos_mdc', function (req, res, next) {
                         requestDt.input("IN_REFERENCIA", sql.VarChar, item.REFERENCIA);
                         requestDt.input("IN_D_REFERENCIA", sql.VarChar, item.DESCRIPCION);
                         requestDt.input("IN_UM", sql.VarChar, item.UNIMED);
-                        requestDt.input("IN_LOG_USER", sql.Int, req.body.dataHeader.csIdUsuario); 
-                 
+                        requestDt.input("IN_LOG_USER", sql.Int, req.body.dataHeader.csIdUsuario);
+
                         requestDt.input("IN_COSTO_MDC", sql.Decimal(20, 5), item.COSTOMDC);
 
                         requestDt.output("MSG", sql.VarChar);
@@ -552,7 +562,7 @@ router.post('/insert_data_costos_mdc', function (req, res, next) {
                                         res.json({
                                             data: [],
                                             'MSG': request.parameters.MSG.value,
-                                             OUT_CS_ID_COSTOS_MDC: request.parameters.OUT_CS_ID_COSTOS_MDC.value
+                                            OUT_CS_ID_COSTOS_MDC: request.parameters.OUT_CS_ID_COSTOS_MDC.value
                                         });
 
                                         console.log("Transaction commited.");
@@ -800,7 +810,7 @@ router.get('/get_insumos_by_producto_cotizacion/:cs_id_dt_cotizacion', function 
         var request = new sql.Request(connection);
         //request.verbose = true;
         request.input("IN_CS_ID_DT_COTIZACION", sql.BigInt, req.params.cs_id_dt_cotizacion);
-        
+
         request.execute('RTA.SSP_GET_INSUMOS_BY_PRODUCTO_COTIZACION', function (err, recordsets, returnValue) {
             if (err) {
                 res.json(err);
@@ -866,7 +876,7 @@ router.post('/editar_producto_dt_cotizacion', function (req, res, next) {
                 } else {
 
                     var request = new sql.Request(transaction);
-                    //request.verbose = true;
+                    request.verbose = true;
                     request.input("IN_CS_ID_COTIZACION", sql.BigInt, req.body.CS_H_COTIZACION);
                     request.input("IN_C_CIDIS", sql.VarChar, req.body.C_CIDIS);
                     request.input("IN_REFERENCIA_PT", sql.VarChar, req.body.ID_REFERENCIA);
@@ -884,8 +894,16 @@ router.post('/editar_producto_dt_cotizacion', function (req, res, next) {
                     request.input("IN_CANTIDAD", sql.Decimal(24, 2), req.body.CANTIDAD);
                     request.input("IN_ULTIMO_COSTO", sql.Decimal(24, 2), req.body.ULTIMO_COSTO || 0);
                     request.input("IN_CANTIDAD_UC", sql.Decimal(24, 2), req.body.CANTIDAD_UC || 0);
-                    request.input("IN_VALOR_CLIENTE", sql.Decimal(24, 2), req.body.VALOR_CLIENTE || 0);
+                    request.input("IN_VALOR_CLIENTE", sql.Decimal(24, 2), req.body.data_totales.costo_cliente || 0);
                     request.input("IN_MARGEN", sql.Decimal(10, 2), req.body.MARGEN);
+
+                    request.input("IN_PJ_DSCTO", sql.Decimal(10, 2), req.body.PJ_DSCTO);
+                    request.input("IN_VR_DSCTO", sql.Decimal(24, 2), req.body.data_totales.descuento || 0);
+                    request.input("IN_VARIACION", sql.Decimal(24, 2), req.body.data_totales.variacion || 0);
+                    request.input("IN_MANO_OBRA", sql.Decimal(24, 2), req.body.data_totales.mano_obra || 0);
+                    request.input("IN_CIF", sql.Decimal(24, 2), req.body.data_totales.cif || 0);
+                    request.input("IN_TOTAL_PRODUCTO", sql.Decimal(24, 2), req.body.data_totales.total || 0);
+
                     request.input("IN_LOG_USER", sql.Int, req.body.ID_USUARIO);
 
                     request.output("OUT_CS_ID_DT_COTIZACION", sql.VarChar);
@@ -1027,7 +1045,7 @@ router.post('/update_costo_mdc', function (req, res, next) {
         var request = new sql.Request(transaction);
         //request.verbose = true;
         request.input("IN_CS_ID", sql.BigInt, req.body.cdIdCosto);
-        request.input("IN_COSTO_MDC", sql.Decimal(24,4), req.body.ESTADO_COTIZACION);
+        request.input("IN_COSTO_MDC", sql.Decimal(24, 4), req.body.ESTADO_COTIZACION);
         request.input("IN_UNIDAD_MEDIDA", sql.VarChar, req.body.unidadMededida);
 
         request.output("MSG", sql.VarChar);
@@ -1072,16 +1090,152 @@ router.post('/update_costo_mdc', function (req, res, next) {
     });
 });
 
+router.post('/insert_nuevo_producto',
+    multipartMiddleware, function(req, res, next) {
 
+        config.configBD2.database = CONSTANTES.RTABD;
+        var connection = new sql.Connection(utils.clone(config.configBD3), function(err) {
+        });
+        var transaction = new sql.Transaction(connection);
 
+        transaction.begin(function(err) {
+            // ... error checks
+            if (err) {
+                console.error(err);
+                res.json({
+                    error: err,
+                    MSG: err.message
+                });
+            }
 
+            var request = new sql.Request(connection);
+            request.verbose = true;
+            request.input("IN_CODIGO_PRODUCTO", sql.VarChar, req.body.codigo_producto);
+            request.input("IN_REFERENCIA", sql.VarChar, req.body.referencia);
+            request.input("IN_LOG_USER", sql.Int, req.body.log_user);
 
+            request.output("MSG", sql.VarChar);
 
+            request.execute('RTA.SSP_INSERT_NUEVO_PRODUCTO', function(err, recordsets, returnValue) {
+                if (err) {
+                    res.json({
+                        error: err,
+                        MSG: err.message
+                    });
 
+                    transaction.rollback(function(err) {
+                        // ... error checks
+                        return;
+                    });
+                } else {
 
+                    if (request.parameters.MSG.value != "OK") {
 
+                        res.json({
+                            error: "err",
+                            MSG: request.parameters.MSG.value
 
+                        });
+                        transaction.rollback(function(err2) {
+                            // ... error checks
+                        });
+                    } else {
 
+                        var nombre_archivo = req.body.codigo_producto;
 
+                        var length_files = 0;
+                        var files = [];
+
+                        if (req.files != undefined && req.files.file != undefined) {
+                            files = [].concat(req.files.file);
+                            length_files = Object.keys(files).length;
+                        }
+
+                        /*al terminar de insertar los registros, realizo el almacenamiento del archivo*/
+                        if (length_files > 0) {
+
+                            var contador = Object.keys(files).length;
+                            files.forEach(function(item) {
+
+                                var ext = (item.name).split('.');
+                                ext = ext[ext.length - 1];
+
+                                var newPath = config.pathBaseGestionDocumental + config.rutaImgProductos + nombre_archivo + "." + ext;
+
+                                fs.exists(config.pathBaseGestionDocumental + config.rutaImgProductos, function(exists) {
+                                    if (exists) {
+                                        fs.readFile(item.path, function(err, data) {
+                                            var imageName = item.name;
+                                            /// If there's an error
+                                            if (!imageName) {
+                                                console.log("There was an error");
+                                                //res.redirect("/");
+                                                res.end();
+                                            } else {
+
+                                                console.log(newPath);
+
+                                                /*escribimos los archivos en la ruta indicada*/
+                                                fs.writeFile(newPath, data, function(err) {
+                                                    if (err) {
+                                                        console.error(err);
+                                                        //res.status(err.status || 500); 
+                                                        res.json({
+                                                            error: err,
+                                                            MSG: err.message
+                                                        });
+                                                        transaction.rollback(function(err2) {
+                                                        });
+                                                    } else {
+                                                        console.log("archivo almacenado!");
+                                                        contador--;
+                                                        console.log("contador " + contador);
+
+                                                        if (contador == 0) {
+
+                                                            /*luego de almacenar los archivos se realiza el envio de correos informando el despacho de los productos*/
+                                                            transaction.commit(function(err, recordset) {
+                                                                console.log("Transaction commited.");
+                                                            });
+
+                                                            //res.json({
+                                                            //    data: [],
+                                                            //    'MSG': "OK"
+                                                            //});
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                        });
+                                    } else {
+                                        res.json({
+                                            data: recordsets,
+                                            'MSG': "No se encontró la ruta " + newPath
+                                        });
+                                        transaction.rollback(function(err2) {
+                                        });
+                                    }
+                                });
+
+                            }); /*fin forEach*/
+                        } else {
+
+                            res.json({
+                                data: [],
+                                'MSG': "No existe imagen para ser almacenada."
+                            });
+                            transaction.rollback(function(err2) {
+                            });
+
+                            //res.json({
+                            //    data: [],
+                            //    'MSG': "OK"
+                            //});
+                        }
+                    }
+                }
+            });
+        });
+    });
 
 module.exports = router;
