@@ -1090,97 +1090,100 @@ router.post('/update_costo_mdc', function (req, res, next) {
     });
 });
 
-router.post('/insert_nuevo_producto',
-    multipartMiddleware, function(req, res, next) {
+router.get('/get_productos_desarrollados_for_gestion_imagen', function (req, res, next) {
 
-        config.configBD2.database = CONSTANTES.RTABD;
-        var connection = new sql.Connection(utils.clone(config.configBD3), function(err) {
-        });
-        var transaction = new sql.Transaction(connection);
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            res.json(err);
+        }
 
-        transaction.begin(function(err) {
-            // ... error checks
+        // Stored Procedure
+        var request = new sql.Request(connection);
+        
+        request.execute('RTA.SSP_GET_PRODUCTOS_DESARROLLADOS_FOR_GESTION_IMAGEN', function (err, recordsets, returnValue) {
             if (err) {
-                console.error(err);
-                res.json({
-                    error: err,
-                    MSG: err.message
-                });
+                res.json(err);
             }
 
-            var request = new sql.Request(connection);
-            request.verbose = true;
-            request.input("IN_CODIGO_PRODUCTO", sql.VarChar, req.body.codigo_producto);
-            request.input("IN_REFERENCIA", sql.VarChar, req.body.referencia);
-            request.input("IN_LOG_USER", sql.Int, req.body.log_user);
+            res.json({
+                data: recordsets
+            });
+        });
 
-            request.output("MSG", sql.VarChar);
+    });
+});
 
-            request.execute('RTA.SSP_INSERT_NUEVO_PRODUCTO', function(err, recordsets, returnValue) {
-                if (err) {
-                    res.json({
-                        error: err,
-                        MSG: err.message
-                    });
+router.post('/almacenar_imagen_producto', multipartMiddleware, function (req, res) {
+    
+    var tamaño = 0;
+    var files;
+    if (req.files.file != undefined) {
+        files = [].concat(req.files.file);
+        tamaño = Object.keys(files).length;
+        console.log("tamaño:  " + tamaño);
+    }
 
-                    transaction.rollback(function(err) {
-                        // ... error checks
-                        return;
+    if (tamaño > 0) {
+
+        var contador = Object.keys(files).length;
+        files.forEach(function (item) {
+
+            var ext = "png";// (item.name).split('.');
+            //ext = ext[ext.length - 1];
+     
+            var nombre_archivo = req.body.ID_ITEM;
+            var rutaFisicaServidor = config.pathBaseGestionDocumental + config.rutaImgProductos;
+
+            var newPath = rutaFisicaServidor + "/" + nombre_archivo + "." + ext;
+
+            fs.exists(rutaFisicaServidor, function (exists) {
+                if (exists) {
+                    fs.readFile(item.path, function (err, data) {
+                        var imageName = item.name;
+                        /// If there's an error
+                        if (!imageName) {
+                            
+                            res.end();
+                        } else {
+
+                            console.log(newPath);
+
+                            /*escribimos los archivos en la ruta indicada*/
+                            fs.writeFile(newPath, data, function (err) {
+                                if (err) {
+                                    
+                                    res.json({
+                                        error: err,
+                                        MSG: err.message
+                                    });
+                          
+                                } else {
+
+                                    contador--;
+                                    
+                                    if (contador == 0) {
+
+                                        res.json({
+                                            data: [],
+                                            'MSG': "OK"
+                                        });
+                                    }
+                                }
+                            });
+                        }
                     });
                 } else {
-
-                    if (request.parameters.MSG.value != "OK") {
-
-                        res.json({
-                            error: "err",
-                            MSG: request.parameters.MSG.value
-
-                        });
-                        transaction.rollback(function(err2) {
-                            // ... error checks
-                        });
-                    } else {
-
-                        var nombre_archivo = req.body.codigo_producto;
-
-                        var length_files = 0;
-                        var files = [];
-
-
-
-
-                                                console.log(newPath);
-
-                                                /*escribimos los archivos en la ruta indicada*/
-                                                fs.writeFile(newPath, data, function(err) {
-                                                    if (err) {
-                                                        console.error(err);
-                                                        //res.status(err.status || 500); 
-                                                        res.json({
-                                                            error: err,
-                                                            MSG: err.message
-                                                        });
-                                                        transaction.rollback(function(err2) {
-                                                        });
-                                                    } else {
-                                                        console.log("archivo almacenado!");
-                                                        contador--;
-                                                        console.log("contador " + contador);
-
-
-
-
-
-
-                            //res.json({
-                            //    data: [],
-                            //    'MSG': "OK"
-                            //});
-                        }
-                    }
+                    res.json({
+                        'MSG': "No se encontró la ruta " + rutaFisicaServidor
+                    });
                 }
             });
         });
-    });
+    } 
+});
 
 module.exports = router;

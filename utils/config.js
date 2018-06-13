@@ -48,8 +48,8 @@ var config = {
     // serverEmailSendinBlue : new  Mailin("https://api.sendinblue.com/v2.0","zdr46mO8E7vxAYaI"),
 
 
-    pathBaseGestionDocumental: 'D:',
-    rutaImgProductos:"/imgProductos/"
+    pathBaseGestionDocumental: 'C:',
+    rutaImgProductos:"/inetpub/wwwroot/img_rta"
 
 };
 
