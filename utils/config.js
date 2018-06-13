@@ -49,8 +49,7 @@ var config = {
 
 
     pathBaseGestionDocumental: 'C:',
-    rutaImgProductos:"/inetpub/wwwroot/img_rta"
-
+    rutaImgProductos:"/img_rta/"
 };
 
 module.exports = config;
