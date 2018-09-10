@@ -163,6 +163,8 @@ router.get('/get_cotizaciones_by_usuario/:idUsuario', function (req, res, next) 
     });
 });
 
+
+
 //CONSULTA EL DETALLE DE CADA ITEM DE UNA COTIZACION 
 router.get('/get_detalle_cotizacion/:csIdCotizacion', function (req, res, next) {
     console.log(req.params);
@@ -754,8 +756,135 @@ router.get('/get_costos_productos_insumos_rta_mdc', function (req, res, next) {
 });
 
 
+router.get('/get_historico_costos_mdc', function (req, res, next) {
+    //  console.log(req.params);
+    //return;
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            res.json(err);
+        }
+
+        // Stored Procedure
+        var request = new sql.Request(connection);
+        //request.verbose = true;
+
+        request.execute('RTA.GET_HISTORICO_COSTOS_MDC', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json(err);
+            }
+
+            res.json({
+                data: recordsets
+            });
+        });
+
+    });
+});
 
 
+
+
+router.post('/anular_costos_mdc', function (req, res, next) {
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+    });
+    var transaction = new sql.Transaction(connection);
+
+    transaction.begin(function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            //res.status(err.status || 500);
+            res.json({
+                error: err,
+                MSG: err.message
+            });
+        }
+
+        // Stored Procedure
+        var request = new sql.Request(transaction);
+        request.verbose = true;
+        request.input("IN_CS_ID_COSTO", sql.BigInt, req.body.cdIdCostos);
+        request.input("IN_USUARIO_UPDATE", sql.Int, req.body.csIdUsuario);
+
+        request.output("MSG", sql.VarChar);
+
+        request.execute('RTA.ANULAR_COSTOS_MDC', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json({
+                    error: err,
+                    MSG: err.message
+                });
+                transaction.rollback(function (err) {
+                    // ... error checks
+                    return;
+                });
+            } else {
+
+                if (request.parameters.MSG.value != "OK") {
+                    //res.status(500);
+                    res.json({
+                        error: "err",
+                        MSG: request.parameters.MSG.value
+
+                    });
+                    transaction.rollback(function (err2) {
+                        // ... error checks
+
+                    });
+                } else {
+                    /*hacemos commit*/
+                    transaction.commit(function (err, recordset) {
+                        // ... error checks
+                        res.json({
+                            data: [],
+                            'MSG': request.parameters.MSG.value
+                        });
+
+                        console.log("Transaction commited.");
+                    });
+                }
+            }
+        });
+    });
+});
+
+
+router.get('/get_detalle_archivo_costos_mdc/:cs_id_costos', function (req, res, next) {
+    console.log(req.params);
+
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            res.json(err);
+        }
+
+        // Stored Procedure
+        var request = new sql.Request(connection);
+        //request.verbose = true;
+        request.input("IN_CS_COSTOS", sql.BigInt, req.params.cs_id_costos);
+
+        request.execute('RTA.GET_DETALLE_ARCHIVO_COSTOS_MDC', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json(err);
+            }
+
+            res.json({
+                data: recordsets
+            });
+        });
+
+    });
+});
 
 
 
