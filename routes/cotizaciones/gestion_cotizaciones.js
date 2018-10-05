@@ -83,7 +83,7 @@ router.get('/get_productos_desarrollados', function (req, res, next) {
         // ... error checks
         if (err) {
             console.error(err);
-            res.json(err);
+          return res.json(err);
         }
 
         // Stored Procedure
@@ -92,7 +92,7 @@ router.get('/get_productos_desarrollados', function (req, res, next) {
 
         request.execute('RTA.GET_PRODUCTOS_DESARROLLADOS', function (err, recordsets, returnValue) {
             if (err) {
-                res.json(err);
+                return res.json(err);
             }
 
             res.json({
