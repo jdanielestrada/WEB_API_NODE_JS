@@ -1315,4 +1315,31 @@ router.post('/almacenar_imagen_producto', multipartMiddleware, function (req, re
     } 
 });
 
+router.get('/get_all_materiales_productos_desarrollados', function (req, res, next) {
+
+    config.configBD3.database = CONSTANTES.RTABD;
+    console.log(config.configBD3.database);
+    var connection = new sql.Connection(utils.clone(config.configBD3), function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            res.json(err);
+        }
+
+        // Stored Procedure
+        var request = new sql.Request(connection);
+        
+        request.execute('RTA.SSP_GET_ALL_MATERIALES_PRODUCTOS_DESARROLLADOS', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json(err);
+            }
+
+            res.json({
+                data: recordsets
+            });
+        });
+
+    });
+});
+
 module.exports = router;
