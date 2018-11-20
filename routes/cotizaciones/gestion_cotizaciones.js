@@ -1323,7 +1323,7 @@ router.get('/get_all_materiales_productos_desarrollados', function (req, res, ne
         // ... error checks
         if (err) {
             console.error(err);
-            res.json(err);
+            return res.json(err);
         }
 
         // Stored Procedure
@@ -1331,7 +1331,7 @@ router.get('/get_all_materiales_productos_desarrollados', function (req, res, ne
 
         request.execute('RTA.SSP_GET_ALL_MATERIALES_PRODUCTOS_DESARROLLADOS', function (err, recordsets, returnValue) {
             if (err) {
-                res.json(err);
+                return res.json(err);
             }
 
             res.json({
@@ -1525,76 +1525,76 @@ router.post('/insert_nuevo_producto', function (req, res, next) {
         //request.verbose = true;
 
         request.input("IN_ID_ITEM", sql.VarChar, req.body.datos_item.ID_ITEM);
-        request.input("IN_ID_EXT_ITM", sql.VarChar, req.body.datos_item.ID_EXT_ITM);
-        request.input("IN_ID_REFERENCIA", sql.VarChar, req.body.datos_item.ID_REFERENCIA);
-        request.input("IN_ID_CODBAR", sql.VarChar, req.body.datos_item.ID_CODBAR);
-        request.input("IN_DESCRIPCION", sql.VarChar, req.body.datos_item.DESCRIPCION);
-        request.input("IN_DESCRIPCION_2", sql.VarChar, req.body.datos_item.DESCRIPCION_2);
-        request.input("IN_ID_PROCEDENCIA", sql.VarChar, req.body.datos_item.ID_PROCEDENCIA);
-        request.input("IN_ID_TIPO", sql.VarChar, req.body.datos_item.ID_TIPO);
-        request.input("IN_ID_LINEA1_6", sql.VarChar, req.body.datos_item.ID_LINEA1_6);
-        request.input("IN_ID_LINEA1", sql.VarChar, req.body.datos_item.ID_LINEA1);
-        request.input("IN_ID_LINEA3_6", sql.VarChar, req.body.datos_item.ID_LINEA3_6);
-        request.input("IN_ID_LINEA2", sql.VarChar, req.body.datos_item.ID_LINEA2);
-        request.input("IN_ID_LINEA5_6", sql.VarChar, req.body.datos_item.ID_LINEA5_6);
-        request.input("IN_ID_LINEA", sql.VarChar, req.body.datos_item.ID_LINEA);
-        request.input("IN_ID_GRUPO1_6", sql.VarChar, req.body.datos_item.ID_GRUPO1_6);
-        request.input("IN_ID_GRUPO1", sql.VarChar, req.body.datos_item.ID_GRUPO1);
-        request.input("IN_ID_GRUPO3_6", sql.VarChar, req.body.datos_item.ID_GRUPO3_6);
-        request.input("IN_ID_GRUPO2", sql.VarChar, req.body.datos_item.ID_GRUPO2);
-        request.input("IN_ID_GRUPO5_6", sql.VarChar, req.body.datos_item.ID_GRUPO5_6);
-        request.input("IN_ID_GRUPO", sql.VarChar, req.body.datos_item.ID_GRUPO);
-        request.input("IN_ID_GRUCON", sql.VarChar, req.body.datos_item.ID_GRUCON);
-        request.input("IN_ID_CRICLA1", sql.VarChar, req.body.datos_item.ID_CRICLA1);
-        request.input("IN_ID_CRICLA2", sql.VarChar, req.body.datos_item.ID_CRICLA2);
-        request.input("IN_ID_CRICLA3", sql.VarChar, req.body.datos_item.ID_CRICLA3);
-        request.input("IN_ID_CRICLA4", sql.VarChar, req.body.datos_item.ID_CRICLA4);
-        request.input("IN_ESTADO", sql.VarChar, req.body.datos_item.ESTADO);
-        request.input("IN_UNIMED_INV_1", sql.VarChar, req.body.datos_item.UNIMED_INV_1);
-        request.input("IN_UNIMED_INV_2", sql.VarChar, req.body.datos_item.UNIMED_INV_2);
-        request.input("IN_FACTOR_INV_2", sql.Decimal(20, 4), req.body.datos_item.FACTOR_INV_2);
-        request.input("IN_UNIMED_EMPAQ", sql.VarChar, req.body.datos_item.UNIMED_EMPAQ);
-        request.input("IN_FACTOR_EMPAQ", sql.Decimal(20, 4), req.body.datos_item.FACTOR_EMPAQ);
-        request.input("IN_PESO", sql.Decimal(20, 4), req.body.datos_item.PESO);
-        request.input("IN_VOLUMEN", sql.Decimal(20, 4), req.body.datos_item.VOLUMEN);
-        request.input("IN_ID_CURVA", sql.VarChar, req.body.datos_item.ID_CURVA);
-        request.input("IN_IMPUESTO", sql.VarChar, req.body.datos_item.IMPUESTO);
-        request.input("IN_RTEFTE", sql.VarChar, req.body.datos_item.RTEFTE);
-        request.input("IN_IND_CLASIF", sql.VarChar, req.body.datos_item.IND_CLASIF);
-        request.input("IN_ID_BODEGA_DEFAULT", sql.VarChar, req.body.datos_item.ID_BODEGA_DEFAULT);
-        request.input("IN_COSTO_EST_ESTENIV", sql.Decimal(20, 4), req.body.datos_item.COSTO_EST_ESTENIV);
-        request.input("IN_COSTO_EST_ACUM", sql.Decimal(20, 4), req.body.datos_item.COSTO_EST_ACUM);
-        request.input("IN_COSTO_ACT_ESTENIV", sql.Decimal(20, 4), req.body.datos_item.COSTO_ACT_ESTENIV);
-        request.input("IN_COSTO_ACT_ACUM", sql.Decimal(20, 4), req.body.datos_item.COSTO_ACT_ACUM);
-        request.input("IN_ULTIMO_COSTO_ED", sql.Decimal(20, 4), req.body.datos_item.ULTIMO_COSTO_ED);
-        request.input("IN_ID_TERC", sql.VarChar, req.body.datos_item.ID_TERC);
-        request.input("IN_NOM_TERC", sql.VarChar, req.body.datos_item.NOM_TERC);
-        request.input("IN_DESC_ITEM_PADRE", sql.VarChar, req.body.datos_item.DESC_ITEM_PADRE);
-        request.input("IN_ARANCELARIA", sql.VarChar, req.body.datos_item.ARANCELARIA);
-        request.input("IN_REFERENCIA_ALT", sql.VarChar, req.body.datos_item.REFERENCIA_ALT);
-        request.input("IN_ID_TALLA", sql.VarChar, req.body.datos_item.ID_TALLA);
-        request.input("IN_ID_ESTADO", sql.VarChar, req.body.datos_item.ID_ESTADO);
-        request.input("IN_ID_RTE_RENTA", sql.VarChar, req.body.datos_item.ID_RTE_RENTA);
-        request.input("IN_ID_BASE_RENTA", sql.VarChar, req.body.datos_item.ID_BASE_RENTA);
-        request.input("IN_ID_PLAN_MAESTRO", sql.VarChar, req.body.datos_item.ID_PLAN_MAESTRO);
-        request.input("IN_ID_EXIGE_OP", sql.VarChar, req.body.datos_item.ID_EXIGE_OP);
-        request.input("IN_ID_POLIT_ORDEN", sql.VarChar, req.body.datos_item.ID_POLIT_ORDEN);
-        request.input("IN_TAM_PROM_LOTE", sql.Decimal(20, 4), req.body.datos_item.TAM_PROM_LOTE);
-        request.input("IN_TIEMPO_SEG", sql.VarChar, req.body.datos_item.TIEMPO_SEG);
-        request.input("IN_INV_SEG", sql.Decimal(20, 4), req.body.datos_item.INV_SEG);
-        request.input("IN_PER_CUBRIM", sql.VarChar, req.body.datos_item.PER_CUBRIM);
-        request.input("IN_TIEMPO_REP", sql.VarChar, req.body.datos_item.TIEMPO_REP);
-        request.input("IN_ID_CRITICO", sql.VarChar, req.body.datos_item.ID_CRITICO);
-        request.input("IN_BODEGA_DEFAULT", sql.VarChar, req.body.datos_item.BODEGA_DEFAULT);
-        request.input("IN_MIN_ORDENAR", sql.Decimal(20, 4), req.body.datos_item.MIN_ORDENAR);
-        request.input("IN_MAX_ORDENAR", sql.Decimal(20, 4), req.body.datos_item.MAX_ORDENAR);
-        request.input("IN_INCREM_ORDENAR", sql.Decimal(20, 4), req.body.datos_item.INCREM_ORDENAR);
-        request.input("IN_PORC_DESPER", sql.Decimal(20, 4), req.body.datos_item.PORC_DESPER);
-        request.input("IN_COD_RUTA", sql.VarChar, req.body.datos_item.COD_RUTA);
-        request.input("IN_COD_LISMAT", sql.VarChar, req.body.datos_item.COD_LISMAT);
-        request.input("IN_EXT_DEFAULT", sql.VarChar, req.body.datos_item.EXT_DEFAULT);
-        request.input("IN_UNIMED_COM", sql.VarChar, req.body.datos_item.UNIMED_COM);
-        request.input("IN_FACTOR_COM", sql.Decimal(20, 4), req.body.datos_item.FACTOR_COM);
+        request.input("IN_ID_EXT_ITM", sql.VarChar, req.body.datos_item.ID_EXT_ITM || "");
+        request.input("IN_ID_REFERENCIA", sql.VarChar, req.body.datos_item.ID_REFERENCIA || "");
+        request.input("IN_ID_CODBAR", sql.VarChar, req.body.datos_item.ID_CODBAR || "");
+        request.input("IN_DESCRIPCION", sql.VarChar, req.body.datos_item.DESCRIPCION || "");
+        request.input("IN_DESCRIPCION_2", sql.VarChar, req.body.datos_item.DESCRIPCION_2 || "");
+        request.input("IN_ID_PROCEDENCIA", sql.VarChar, req.body.datos_item.ID_PROCEDENCIA || "");
+        request.input("IN_ID_TIPO", sql.VarChar, req.body.datos_item.ID_TIPO || "");
+        request.input("IN_ID_LINEA1_6", sql.VarChar, req.body.datos_item.ID_LINEA1_6 || "");
+        request.input("IN_ID_LINEA1", sql.VarChar, req.body.datos_item.ID_LINEA1 || "");
+        request.input("IN_ID_LINEA3_6", sql.VarChar, req.body.datos_item.ID_LINEA3_6 || "");
+        request.input("IN_ID_LINEA2", sql.VarChar, req.body.datos_item.ID_LINEA2 || "");
+        request.input("IN_ID_LINEA5_6", sql.VarChar, req.body.datos_item.ID_LINEA5_6 || "");
+        request.input("IN_ID_LINEA", sql.VarChar, req.body.datos_item.ID_LINEA || "");
+        request.input("IN_ID_GRUPO1_6", sql.VarChar, req.body.datos_item.ID_GRUPO1_6 || "");
+        request.input("IN_ID_GRUPO1", sql.VarChar, req.body.datos_item.ID_GRUPO1 || "");
+        request.input("IN_ID_GRUPO3_6", sql.VarChar, req.body.datos_item.ID_GRUPO3_6 || "");
+        request.input("IN_ID_GRUPO2", sql.VarChar, req.body.datos_item.ID_GRUPO2 || "");
+        request.input("IN_ID_GRUPO5_6", sql.VarChar, req.body.datos_item.ID_GRUPO5_6 || "");
+        request.input("IN_ID_GRUPO", sql.VarChar, req.body.datos_item.ID_GRUPO || "");
+        request.input("IN_ID_GRUCON", sql.VarChar, req.body.datos_item.ID_GRUCON || "");
+        request.input("IN_ID_CRICLA1", sql.VarChar, req.body.datos_item.ID_CRICLA1 || "");
+        request.input("IN_ID_CRICLA2", sql.VarChar, req.body.datos_item.ID_CRICLA2 || "");
+        request.input("IN_ID_CRICLA3", sql.VarChar, req.body.datos_item.ID_CRICLA3 || "");
+        request.input("IN_ID_CRICLA4", sql.VarChar, req.body.datos_item.ID_CRICLA4 || "");
+        request.input("IN_ESTADO", sql.VarChar, req.body.datos_item.ESTADO || "");
+        request.input("IN_UNIMED_INV_1", sql.VarChar, req.body.datos_item.UNIMED_INV_1 || "");
+        request.input("IN_UNIMED_INV_2", sql.VarChar, req.body.datos_item.UNIMED_INV_2 || "");
+        request.input("IN_FACTOR_INV_2", sql.Decimal(20, 4), req.body.datos_item.FACTOR_INV_2 || 0);
+        request.input("IN_UNIMED_EMPAQ", sql.VarChar, req.body.datos_item.UNIMED_EMPAQ || "");
+        request.input("IN_FACTOR_EMPAQ", sql.Decimal(20, 4), req.body.datos_item.FACTOR_EMPAQ || 0);
+        request.input("IN_PESO", sql.Decimal(20, 4), req.body.datos_item.PESO || 0);
+        request.input("IN_VOLUMEN", sql.Decimal(20, 4), req.body.datos_item.VOLUMEN || 0);
+        request.input("IN_ID_CURVA", sql.VarChar, req.body.datos_item.ID_CURVA || "");
+        request.input("IN_IMPUESTO", sql.VarChar, req.body.datos_item.IMPUESTO || "");
+        request.input("IN_RTEFTE", sql.VarChar, req.body.datos_item.RTEFTE || "");
+        request.input("IN_IND_CLASIF", sql.VarChar, req.body.datos_item.IND_CLASIF || "");
+        request.input("IN_ID_BODEGA_DEFAULT", sql.VarChar, req.body.datos_item.ID_BODEGA_DEFAULT || "");
+        request.input("IN_COSTO_EST_ESTENIV", sql.Decimal(20, 4), req.body.datos_item.COSTO_EST_ESTENIV || 0);
+        request.input("IN_COSTO_EST_ACUM", sql.Decimal(20, 4), req.body.datos_item.COSTO_EST_ACUM || 0);
+        request.input("IN_COSTO_ACT_ESTENIV", sql.Decimal(20, 4), req.body.datos_item.COSTO_ACT_ESTENIV || 0);
+        request.input("IN_COSTO_ACT_ACUM", sql.Decimal(20, 4), req.body.datos_item.COSTO_ACT_ACUM || 0);
+        request.input("IN_ULTIMO_COSTO_ED", sql.Decimal(20, 4), req.body.datos_item.ULTIMO_COSTO_ED || 0);
+        request.input("IN_ID_TERC", sql.VarChar, req.body.datos_item.ID_TERC || "");
+        request.input("IN_NOM_TERC", sql.VarChar, req.body.datos_item.NOM_TERC || "");
+        request.input("IN_DESC_ITEM_PADRE", sql.VarChar, req.body.datos_item.DESC_ITEM_PADRE || "");
+        request.input("IN_ARANCELARIA", sql.VarChar, req.body.datos_item.ARANCELARIA || "");
+        request.input("IN_REFERENCIA_ALT", sql.VarChar, req.body.datos_item.REFERENCIA_ALT || "");
+        request.input("IN_ID_TALLA", sql.VarChar, req.body.datos_item.ID_TALLA || "");
+        request.input("IN_ID_ESTADO", sql.VarChar, req.body.datos_item.ID_ESTADO || "");
+        request.input("IN_ID_RTE_RENTA", sql.VarChar, req.body.datos_item.ID_RTE_RENTA || "");
+        request.input("IN_ID_BASE_RENTA", sql.VarChar, req.body.datos_item.ID_BASE_RENTA || "");
+        request.input("IN_ID_PLAN_MAESTRO", sql.VarChar, req.body.datos_item.ID_PLAN_MAESTRO || "");
+        request.input("IN_ID_EXIGE_OP", sql.VarChar, req.body.datos_item.ID_EXIGE_OP || "");
+        request.input("IN_ID_POLIT_ORDEN", sql.VarChar, req.body.datos_item.ID_POLIT_ORDEN || "");
+        request.input("IN_TAM_PROM_LOTE", sql.Decimal(20, 4), req.body.datos_item.TAM_PROM_LOTE || 0);
+        request.input("IN_TIEMPO_SEG", sql.VarChar, req.body.datos_item.TIEMPO_SEG || "");
+        request.input("IN_INV_SEG", sql.Decimal(20, 4), req.body.datos_item.INV_SEG || 0);
+        request.input("IN_PER_CUBRIM", sql.VarChar, req.body.datos_item.PER_CUBRIM || "");
+        request.input("IN_TIEMPO_REP", sql.VarChar, req.body.datos_item.TIEMPO_REP || "");
+        request.input("IN_ID_CRITICO", sql.VarChar, req.body.datos_item.ID_CRITICO || "");
+        request.input("IN_BODEGA_DEFAULT", sql.VarChar, req.body.datos_item.BODEGA_DEFAULT || "");
+        request.input("IN_MIN_ORDENAR", sql.Decimal(20, 4), req.body.datos_item.MIN_ORDENAR || 0);
+        request.input("IN_MAX_ORDENAR", sql.Decimal(20, 4), req.body.datos_item.MAX_ORDENAR || 0);
+        request.input("IN_INCREM_ORDENAR", sql.Decimal(20, 4), req.body.datos_item.INCREM_ORDENAR || 0);
+        request.input("IN_PORC_DESPER", sql.Decimal(20, 4), req.body.datos_item.PORC_DESPER || 0);
+        request.input("IN_COD_RUTA", sql.VarChar, req.body.datos_item.COD_RUTA || "");
+        request.input("IN_COD_LISMAT", sql.VarChar, req.body.datos_item.COD_LISMAT || "");
+        request.input("IN_EXT_DEFAULT", sql.VarChar, req.body.datos_item.EXT_DEFAULT || "");
+        request.input("IN_UNIMED_COM", sql.VarChar, req.body.datos_item.UNIMED_COM || "");
+        request.input("IN_FACTOR_COM", sql.Decimal(20, 4), req.body.datos_item.FACTOR_COM || 0);
 
         request.output("MSG", sql.VarChar);
 
