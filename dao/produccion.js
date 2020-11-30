@@ -5,11 +5,13 @@ var utils      = require('../utils/utils');
 var Promise    = require('bluebird');
 var async      = require('async');
 var moment = require('moment');
+var https = require('https');
 
 
 var produccion_dao = {
-    //declare function
-    crear_orden_produccion: function(c_centro_operacion, cs_id_orden, log_insert) {
+
+
+    get_despachos_reparto_envia: function(id_orden) {
         return new Promise((resolve, reject) => {
             config.configBD2.database = CONSTANTES.POSDB;
             var connection = new sql.Connection(utils.clone(config.configBD2), function(err) {
@@ -19,72 +21,190 @@ var produccion_dao = {
                     reject(err);
                 }
 
-                var requestOp = new sql.Request(connection);
-                requestOp.verbose = true;
+                var request = new sql.Request(connection);
+                request.verbose = false;
 
-                requestOp.input("IN_C_CENTRO_OPERACION", sql.VarChar, c_centro_operacion);
-                requestOp.input("IN_CS_ID_ORDEN", sql.Int, cs_id_orden);
-                requestOp.input("IN_LOG_INSERT", sql.Int, log_insert);
-
-                requestOp.output('MSG', sql.VarChar(200));
-
-                requestOp.execute('PRODUCCION.SSP_INSERT_ORDEN_PRODUCCION', function(err, recordsets, returnValue) {
+                request.execute('POS.SSP_GET_DESPACHOS_EN_REPARTO_ENVIA', function(err, recordsets, returnValue) {
                     if (err) {
                         reject({
                             error: "err",
                             MSG: err.message
                         });
-                    } else if (requestOp.parameters.MSG.value !== "GUARDADO") {
-                        reject({
-                            error: "err",
-                            MSG: requestOp.parameters.MSG.value
-                        });
-
-                    } else {
-                        resolve({
-                            error: "",
-                            data: recordsets,
-                            'MSG': request.parameters.MSG.value
-                        });
-                    }
-                });
-            });
-
-        });
-
-    },
-
-    get_ordenes_produccion_by_id_orden: function(id_orden) {
-        return new Promise((resolve, reject) => {
-            config.configBD2.database = CONSTANTES.POSDB;
-            var connection = new sql.Connection(utils.clone(config.configBD2), function(err) {
-                // ... error checks
-                if (err) {
-                    console.error(err);
-                    reject(err);
-                }
-
-                var requestOp = new sql.Request(connection);
-                requestOp.verbose = false;
-                requestOp.input("IN_CS_ID_ORDEN", sql.Int, id_orden);
-
-                requestOp.execute('PRODUCCION.SSP_GET_ESTADOS_OP_BY_ID_ORDEN', function(err, recordsets, returnValue) {
-                    if (err) {
-                        reject({
-                            error: "err",
-                            MSG: err.message
-                        });
-                    } else {
+                    } 
+                    else {
                         resolve({
                             error: "",
                             data: recordsets[0],
-                            'MSG': "OK"
+                            'MSG': "OK",
+
+                            cambiar_estado_despacho_pedido_envia(data)
                         });
                     }
                 });
             });
         });
     },
+
+    cambiar_estado_despacho_pedido_envia: function (data) {
+        return new Promise((resolve, reject) => {
+
+            var listaPedidos = data;
+            let conexion = utils.clone(config.configBD2);
+
+            //Utilizar driver para controlar errores de conversión 
+            conexion.driver = "msnodesqlv8";
+            conexion.database = CONSTANTES.POSDB;
+
+            let connection = new sql.Connection(conexion);
+
+            connection.connect(function(err) {
+
+                if (err) {
+                    reject({
+                        error: err,
+                        MSG: err.message
+                    });
+                }
+
+                let transaction = new sql.Transaction(connection);
+
+                transaction.begin(function(err) {
+                    // ... error checks
+                    if (err) {
+                        reject({
+                            error: err,
+                            MSG: err.message
+                        });
+                    }
+                    let cantPedidosPendientes = listaPedidos.length;
+                    async.each(listaPedidos, function(item, callback) {
+
+                            var request = new sql.Request(transaction);
+                            request.verbose = false;
+                            request.input('IN_CS_ID_ORDEN_PRODUCCION', sql.BigInt, body.cs_id_orden_produccion);
+                            request.input("IN_ORDEN_ETAPA"           , sql.Int, item.indice);
+                            request.input("IN_C_GRUPO_SERVICIO"      , sql.Int, item.c_grupo_servicio);
+                            request.input("IN_C_DEPENDENCIA"         , sql.VarChar, item.c_dependencia);
+                            request.input('IN_LOG_UPDATE'            , sql.Int, body.log_user);
+
+                            request.output("MSG", sql.VarChar);
+
+                            request.execute('PRODUCCION.SSP_UPDATE_ORDEN_ETAPAS_ORDEN_PRODUCCION', function(err, recordsets, returnValue) {
+                                if (err) {
+                                    // ... error checks
+                                    callback(err.message);
+
+                                } else if (request.parameters.MSG.value !== "GUARDADO") {
+                                    callback(request.parameters.MSG.value);
+                                } else {
+                                    cantEtapasOp--;
+                                    callback();
+                                }
+
+                            });
+                        },
+                        function(err) {
+
+                            if (err) {  
+                                reject({
+                                    error: err,
+                                    MSG: err.message
+                                });
+                                console.log(reject.error);
+
+                                // transaction.rollback(function(err) {
+                                //     // ... error checks
+                                //     return;
+                                // });
+
+
+                            } else {
+
+                                if (cantPedidosPendientes === 0) {
+
+                                    let request = new sql.Request(transaction);
+                                    request.verbose = true;
+
+                                    request.input("IN_CS_ID_ORDEN_PRODUCCION"     , sql.BigInt, body.cs_id_orden_produccion);
+                                    request.input("IN_FECHA_SUGERIDA_PROGRAMACION", sql.Date, new Date(body.fecha_sugerida_programacion));
+                                    request.input('IN_LOG_INSERT'                 , sql.Int, body.log_user);
+
+                                    request.output('MSG', sql.VarChar);
+
+                                    request.execute('PRODUCCION.SSP_INSERT_CANTIDAD_PRODUCCION_ETAPAS_BY_FECHA', function(err, recordsets, returnValue) {
+                                        if (err) {
+                                            reject({
+                                                error: err,
+                                                MSG: err.message
+                                            });
+                                            transaction.rollback(function(err) {
+                                                // ... error checks
+                                                return;
+                                            });
+                                        } else {
+
+                                            if (request.parameters.MSG.value !== "GUARDADO") {
+                                                reject({
+                                                    error: "err",
+                                                    MSG: request.parameters.MSG.value
+                                                });
+                                                transaction.rollback(function(err2) {
+                                                });
+
+                                            } else {
+
+                                                /*modifico el sw {sw_programacion_op_f_entrega_cliente = true} de la programacion de las cantidades de producción de la OP*/
+                                                let requestQuery = new sql.Request(transaction);
+                                                requestQuery.verbose = true;
+
+                                                requestQuery.input("IN_CS_ID_ORDEN_PRODUCCION", sql.BigInt, body.cs_id_orden_produccion);
+                                                requestQuery.input('IN_LOG_USER'              , sql.Int, body.log_user);
+                                                
+                                                requestQuery.query('UPDATE PRODUCCION.DT_PROGRAMACION_ETAPAS_OP_DIA SET [sw_programacion_op_f_entrega_cliente] = 1 ,[log_update] = @IN_LOG_USER ,[fh_update] = GETDATE() WHERE [cs_id_orden_produccion] = @IN_CS_ID_ORDEN_PRODUCCION',
+                                                    function (err) {
+                                                        if (err) {
+                                                            reject({
+                                                                error: err,
+                                                                MSG: err.message
+                                                            });
+                                                            transaction.rollback(function (err) {
+                                                                // ... error checks
+                                                                return;
+                                                            });
+                                                        }
+
+                                                        transaction.commit(function () {
+                                                            console.log("Transaction commited.");
+                                                        });
+
+                                                        produccion_dao.get_dt_planeacion_etapas_dia_by_op(body.cs_id_orden_produccion)
+                                                            .then(function(result) {
+                                                                resolve({
+                                                                    data: result.data,
+                                                                    MSG: request.parameters.MSG.value
+                                                                });
+                                                            })
+                                                            .catch(function(err) {
+                                                                reject({
+                                                                    error: err,
+                                                                    data: [],
+                                                                    MSG: request.parameters.MSG.value
+                                                                });
+                                                            });
+                                                    });
+                                            }
+                                        }
+                                    });
+
+                                }
+                            }
+                        });
+                });
+            });
+        });
+    },
+    
+   
     get_solicitudes_traslados_by_id_orden: function(id_orden) {
         return new Promise((resolve, reject) => {
             config.configBD2.database = CONSTANTES.POSDB;
@@ -916,163 +1036,7 @@ var produccion_dao = {
             });
     },
     
-    insert_cantidad_produccion_etapas_by_fecha: function (body) {
-        return new Promise((resolve, reject) => {
 
-            let conexion = utils.clone(config.configBD2);
-
-            //Utilizar driver para controlar errores de conversión 
-            conexion.driver = "msnodesqlv8";
-            conexion.database = CONSTANTES.POSDB;
-
-            let connection = new sql.Connection(conexion);
-
-            connection.connect(function(err) {
-
-                if (err) {
-                    reject({
-                        error: err,
-                        MSG: err.message
-                    });
-                }
-
-                let transaction = new sql.Transaction(connection);
-
-                transaction.begin(function(err) {
-                    // ... error checks
-                    if (err) {
-                        reject({
-                            error: err,
-                            MSG: err.message
-                        });
-                    }
-
-                    /* actualizamos el orden de los items en la tbl DT_ORDEN_PRODUCCION*/
-                    let cantEtapasOp = body.list_etapas_op.length;
-                    async.each(body.list_etapas_op, function(item, callback) {
-
-                            var request = new sql.Request(transaction);
-                            request.verbose = false;
-                            request.input('IN_CS_ID_ORDEN_PRODUCCION', sql.BigInt, body.cs_id_orden_produccion);
-                            request.input("IN_ORDEN_ETAPA"           , sql.Int, item.indice);
-                            request.input("IN_C_GRUPO_SERVICIO"      , sql.Int, item.c_grupo_servicio);
-                            request.input("IN_C_DEPENDENCIA"         , sql.VarChar, item.c_dependencia);
-                            request.input('IN_LOG_UPDATE'            , sql.Int, body.log_user);
-
-                            request.output("MSG", sql.VarChar);
-
-                            request.execute('PRODUCCION.SSP_UPDATE_ORDEN_ETAPAS_ORDEN_PRODUCCION', function(err, recordsets, returnValue) {
-                                if (err) {
-                                    // ... error checks
-                                    callback(err.message);
-
-                                } else if (request.parameters.MSG.value !== "GUARDADO") {
-                                    callback(request.parameters.MSG.value);
-                                } else {
-                                    cantEtapasOp--;
-                                    callback();
-                                }
-
-                            });
-                        },
-                        function(err) {
-
-                            if (err) {
-                                reject({
-                                    error: err,
-                                    MSG: err.message
-                                });
-                                transaction.rollback(function(err) {
-                                    // ... error checks
-                                    return;
-                                });
-
-                            } else {
-
-                                if (cantEtapasOp === 0) {
-
-                                    let request = new sql.Request(transaction);
-                                    request.verbose = true;
-
-                                    request.input("IN_CS_ID_ORDEN_PRODUCCION"     , sql.BigInt, body.cs_id_orden_produccion);
-                                    request.input("IN_FECHA_SUGERIDA_PROGRAMACION", sql.Date, new Date(body.fecha_sugerida_programacion));
-                                    request.input('IN_LOG_INSERT'                 , sql.Int, body.log_user);
-
-                                    request.output('MSG', sql.VarChar);
-
-                                    request.execute('PRODUCCION.SSP_INSERT_CANTIDAD_PRODUCCION_ETAPAS_BY_FECHA', function(err, recordsets, returnValue) {
-                                        if (err) {
-                                            reject({
-                                                error: err,
-                                                MSG: err.message
-                                            });
-                                            transaction.rollback(function(err) {
-                                                // ... error checks
-                                                return;
-                                            });
-                                        } else {
-
-                                            if (request.parameters.MSG.value !== "GUARDADO") {
-                                                reject({
-                                                    error: "err",
-                                                    MSG: request.parameters.MSG.value
-                                                });
-                                                transaction.rollback(function(err2) {
-                                                });
-
-                                            } else {
-
-                                                /*modifico el sw {sw_programacion_op_f_entrega_cliente = true} de la programacion de las cantidades de producción de la OP*/
-                                                let requestQuery = new sql.Request(transaction);
-                                                requestQuery.verbose = true;
-
-                                                requestQuery.input("IN_CS_ID_ORDEN_PRODUCCION", sql.BigInt, body.cs_id_orden_produccion);
-                                                requestQuery.input('IN_LOG_USER'              , sql.Int, body.log_user);
-                                                
-                                                requestQuery.query('UPDATE PRODUCCION.DT_PROGRAMACION_ETAPAS_OP_DIA SET [sw_programacion_op_f_entrega_cliente] = 1 ,[log_update] = @IN_LOG_USER ,[fh_update] = GETDATE() WHERE [cs_id_orden_produccion] = @IN_CS_ID_ORDEN_PRODUCCION',
-                                                    function (err) {
-                                                        if (err) {
-                                                            reject({
-                                                                error: err,
-                                                                MSG: err.message
-                                                            });
-                                                            transaction.rollback(function (err) {
-                                                                // ... error checks
-                                                                return;
-                                                            });
-                                                        }
-
-                                                        transaction.commit(function () {
-                                                            console.log("Transaction commited.");
-                                                        });
-
-                                                        produccion_dao.get_dt_planeacion_etapas_dia_by_op(body.cs_id_orden_produccion)
-                                                            .then(function(result) {
-                                                                resolve({
-                                                                    data: result.data,
-                                                                    MSG: request.parameters.MSG.value
-                                                                });
-                                                            })
-                                                            .catch(function(err) {
-                                                                reject({
-                                                                    error: err,
-                                                                    data: [],
-                                                                    MSG: request.parameters.MSG.value
-                                                                });
-                                                            });
-                                                    });
-                                            }
-                                        }
-                                    });
-
-                                }
-                            }
-                        });
-                });
-            });
-        });
-    },
-    
     get_dt_planeacion_etapas_dia_by_op: function (cs_id_orden_produccion) {
             return new Promise((resolve, reject) => {
 
