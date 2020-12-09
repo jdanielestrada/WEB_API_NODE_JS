@@ -3667,10 +3667,10 @@ router.post('/insertArchivosPlanos', function (req, res) {
 
         req.body.detalle.forEach(item => {
 
-            item.OBSERVACION       = item.OBSERVACION.replace('|','')
-            item.DIRECCION_CLIENTE = item.DIRECCION_CLIENTE.replace('|','')
-            item.OBSERVACION       = item.OBSERVACION.replace(',','')
-            item.DIRECCION_CLIENTE = item.DIRECCION_CLIENTE.replace(',','')
+            // item.OBSERVACION       = item.OBSERVACION.replace('|','')
+            // item.DIRECCION_CLIENTE = item.DIRECCION_CLIENTE.replace('|','')
+            // item.OBSERVACION       = item.OBSERVACION.replace(',','')
+            // item.DIRECCION_CLIENTE = item.DIRECCION_CLIENTE.replace(',','')
 
             tableDatos.rows.add(
                 req.body.solicitud.documentoCliente.trim(),
@@ -3679,11 +3679,11 @@ router.post('/insertArchivosPlanos', function (req, res) {
                 item.CEDULA_CLIENTE.replace('"',''),
                 item.NOMBRE_CLIENTE.replace('"',''),
                 item.NRO_OC,
-                item.DIRECCION_CLIENTE.replace('"',''),
+                item.DIRECCION_CLIENTE,
                 item.DEPARTAMENTO_CLIENTE || '',
-                item.CUIDAD_CLIENTE.replace('"',''),
+                item.CUIDAD_CLIENTE,
                 req.body.solicitud.tipoPedido,
-                item.C_PRODUCTO.replace('"',''),
+                item.C_PRODUCTO,
                 item.CODIGO_BARRAS,
                 item.CANTIDAD,
                 item.OBSERVACION || '',
