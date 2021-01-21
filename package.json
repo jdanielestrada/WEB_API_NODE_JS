@@ -40,7 +40,7 @@
     "q": "^1.4.1",
     "request": "^2.80.0",
     "serve-favicon": "~2.4.1",
-    "socket.io": "^1.7.3",
+    "socket.io": "^2.4.0",
     "strong-soap": "^1.2.3",
     "tedious": "^1.14.0",
     "tedious-connection-pool": "^1.0.5",
