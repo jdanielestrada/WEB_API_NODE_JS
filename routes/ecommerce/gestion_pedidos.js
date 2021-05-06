@@ -434,6 +434,8 @@ router.post('/inserGuiaDespacho', function (req, res, next) {
         request.input("IN_ID_USUARIO", sql.Int, req.body.csIdusuario);
         request.input("IN_TRANSPORTADORA", sql.Int, req.body.transportadora);
         request.input("IN_TIPO_ENVIO", sql.Int, req.body.tipoEnvio);
+        request.input("IN_ID_DESPACHO", sql.BigInt, req.body.cs_id_h_despacho);
+
 
         request.output("MSG", sql.VarChar);
         request.execute('POS.SSP_INSERT_GUIA_DESPACHO', function (err, recordsets, returnValue) {
@@ -4202,6 +4204,34 @@ router.post('/generarGuiaSaferbo', function(req, res, next) {
     let cuidadDestino = req.body.cuidadDestino.replace('#','N');
 
     console.log(req.body);
+    // let completarDestino       ='000'
+    // let cuidad_depto           = cuidadDestino +'-'+ req.body.deptoDestino+'-'+req.body.c_departamento_destino +''+ req.body.c_municipio
+    // let destino                = cuidad_depto + completarDestino
+    // let origen                 = 'VALLE-YUMBO-76892000'
+    // let peso                   = req.body.pesoEnvio
+    // let valor_declarado        = req.body.valorDeclaradoEnvio.toString()
+    // let cantidad               = req.body.nroUnidadesEnvio.toString()
+    // let codigocliente          = CONSTANTES.codigo_cliente // '999997'  
+    // //let codigocliente        = '034865'  //real 
+    // let nit_remitente          ='805026021-8'
+    // let nombre_remitente       ='RTA DESING'
+    // let telefono_remitente     ='6911700'
+    // let direccion_remitente    ='Carrera 15 No 17 28'
+    // let kilos                  = '0'
+    // let observacion            = req.body.observacion //+' '+ req.body.direccionArchivo
+    // let observacion2           = req.body.referencia_producto 
+    // let observacion3           = ''//req.body.direccionDestino 
+    // let codigo_destinatario    = '0000'
+    // let nit_destinatario       = req.body.documentoCliente
+    // let nombre_destinatario    = req.body.clienteDestino
+    // let telefono_destinatario  = req.body.telefonoDestino
+    // let direccion_destinatario = req.body.direccionDestino
+    // direccion_destinatario     = direccion_destinatario.replace('#',' Nro ');
+    // direccion_destinatario     = normalize(direccion_destinatario)
+    // let valor_recaudar         ='0'
+
+
+    console.log(req.body);
     let completarDestino       ='000'
     let cuidad_depto           = cuidadDestino +'-'+ req.body.deptoDestino+'-'+req.body.c_departamento_destino +''+ req.body.c_municipio
     let destino                = cuidad_depto + completarDestino
@@ -4638,6 +4668,17 @@ console.log(req.body);
     var log_insert  = CONSTANTES.log_insert_ftp//3969
 
     fs.readFile(ruta_acrhivo, 'utf8', function (err, data) {
+         
+        console.log(data)
+        if(data === undefined){
+            console.log('no hay datos')
+
+            res.json({
+                'MSG': 'SIN PEDIDOS'
+            });
+            return;
+        }
+
         var dataArray = data.split(/\r?\n/);
         console.log(dataArray);
 
@@ -4791,7 +4832,7 @@ console.log(req.body);
                 .input("IN_LOG_INSERT", sql.Int, log_insert)
                 .output("MSG", sql.VarChar)
     
-                .execute('POS.SSP_INSERT_OV_FROM_PLANO',
+                .execute('POS.SSP_INSERT_OV_FROM_PLANO_TEST_DATA',
                 function (err, recordsets, returnValue) {
                     if (err) {
                         console.log(err);
@@ -5095,6 +5136,357 @@ router.get('/getEstadoPedidoUnoee/:nro_pedido/:tipopedido/:c_centro_operacion/:c
         });
 
 
+    });
+});
+
+
+router.post('/generar_pedidos_ftp_by_fecha_ALL', function (req, res, next) {
+        console.log(req.body);
+
+        pos_dao.get_ftp_clientes_pedidos()
+        .then(result => {
+
+            console.log(result)
+            let array_ftp  = result.data[0]
+
+            var cant = array_ftp.length;
+
+            config.configBD2.database = CONSTANTES.POSDB;
+            var connection = new sql.Connection(utils.clone(config.configBD2),
+                function (err) {
+                });
+            var transaction = new sql.Transaction(connection);
+        
+            transaction.begin(function (err) {
+                // ... error checks
+                if (err) {
+                    res.json({
+                        error: err,
+                        MSG: err.message
+                    });
+                    res.end();
+                    return;
+                }
+         
+                async.each(array_ftp, function (item, callback) {
+
+                    arreglocsv = [];
+
+                    console.log(item)
+
+                    let fecha = req.body.fh_year +'-'+ req.body.fh_month +'-'+ req.body.fh_day 
+        
+                    let fecha_actual = fecha
+                    console.log(fecha_actual)
+
+                    let ruta_acrhivo = item.ruta_ftp + item.formato_archivo + fecha_actual + item.extencion
+        
+                    var documento_cliente =item.documento_cliente 
+                    var nombre_cliente   = item.nombre_cliente 
+                
+                    var tipo_pedido = 3
+                
+                
+                    var log_insert  = item.usuario_responsable//3969
+
+                    var arreglocsv = [];
+                    const tableDatos = new sql.Table();
+            
+                    console.log(arreglocsv)
+            
+                    tableDatos.columns.add("documento_cliente", sql.VarChar);
+                    tableDatos.columns.add("nombre_cliente", sql.VarChar);
+                    tableDatos.columns.add("cs_id_usuario", sql.Int);
+                    tableDatos.columns.add("documento_cliente_ecommerce", sql.VarChar);
+                    tableDatos.columns.add("nombre_cliente_ecommerce", sql.VarChar);
+                    tableDatos.columns.add("orden_compra", sql.VarChar);
+                    tableDatos.columns.add("direccion_cliente", sql.VarChar);
+                    tableDatos.columns.add("c_departamento", sql.VarChar);
+                    tableDatos.columns.add("c_cuidad", sql.VarChar);
+                    tableDatos.columns.add("c_tipo_pedido", sql.VarChar);
+                    tableDatos.columns.add("referencia", sql.VarChar);
+                    tableDatos.columns.add("codigo_barras", sql.VarChar);
+                    tableDatos.columns.add("cantidad", sql.Decimal(14, 2));
+                    tableDatos.columns.add("observacion", sql.VarChar);
+                    tableDatos.columns.add("c_tienda", sql.VarChar);
+                    tableDatos.columns.add("telefono_cliente", sql.VarChar);
+                    tableDatos.columns.add("c_sucursal", sql.VarChar);
+        
+                
+                    fs.readFile(ruta_acrhivo, 'utf8', function (err, data) {
+                        
+                        console.log(data)
+                        if(data === undefined){
+                            console.log('no hay datos')
+                            cant--;
+                            callback();
+                
+                            return;
+                        }
+                
+                        var dataArray = data.split(/\r?\n/);
+                        console.log(dataArray);
+                
+                        var contenido = data
+                
+                
+                
+                        //separa objetos por salto de linea
+                        let separata = contenido.split("\n");
+                
+                        //asignar cabecera los separa por ',' 
+                        var cabecera = separata[0].split(';');
+                        separata.splice(0, 1);
+                    //var arreglocsv = [];
+                    for (var j = 0; j < separata.length; j++) {
+                            var objetojson = {};
+                    
+                            var item = separata[j].split(';');
+                    
+                        
+                    
+                            for (var i = 0; i < cabecera.length; i++) {
+                                objetojson[cabecera[i]] = item[i];
+                            }
+                    
+                        
+                            if (objetojson.DIRECCION_CLIENTE !== '' && objetojson.DIRECCION_CLIENTE !== undefined) {
+                                arreglocsv.push({
+                                
+                                
+                                    NOMBRE_CLIENTE: objetojson.NOMBRE_CLIENTE,
+                                    CEDULA_CLIENTE: objetojson.CEDULA_CLIENTE,
+                                    NRO_OC: objetojson.ORDEN_COMPRA,
+                                    DIRECCION_CLIENTE: objetojson.DIRECCION_CLIENTE,
+                                    DEPARTAMENTO_CLIENTE: objetojson.DEPARTAMENTO_CLIENTE,
+                                    CUIDAD_CLIENTE: objetojson.CIUDAD_CLIENTE,
+                                    C_PRODUCTO: objetojson.REFERENCIA_PROVEEDOR,
+                                    CODIGO_BARRAS: objetojson.CODIGO_BARRAS,
+                                    CANTIDAD: objetojson.CANTIDAD,
+                                    OBSERVACION:objetojson.OBSERVACIONES,
+                                    C_TINDA:objetojson.TIENDA_ID,
+                                    TELEFONO_CLIENTE: objetojson.TELEFONO_CLIENTE_1,
+                                    SUCURSAL:objetojson.SUCURSAL,
+                                    NOMBRE_PROBEEDOR:objetojson.NOMBRE_PROVEEDOR
+                                
+                    
+                                });
+                            }
+                        
+                        }
+
+                        console.log(arreglocsv)
+
+                        
+                    arreglocsv.forEach(item => {
+                        if(item.SUCURSAL ==='42'){
+        
+                            tableDatos.rows.add(
+                                documento_cliente,
+                                nombre_cliente,
+                                log_insert,
+                                item.CEDULA_CLIENTE.replace('"',''),
+                                item.NOMBRE_CLIENTE.replace('"',''),
+                                item.NRO_OC,
+                                item.DIRECCION_CLIENTE.replace('"',''),
+                                item.DEPARTAMENTO_CLIENTE.replace('"',''),
+                                item.CUIDAD_CLIENTE.replace('"',''),
+                                tipo_pedido,
+                                item.C_PRODUCTO.replace('"',''),
+                                item.CODIGO_BARRAS,
+                                item.CANTIDAD,
+                                item.OBSERVACION || '',
+                                item.C_TINDA,
+                                item.TELEFONO_CLIENTE || '',
+                                item.SUCURSAL
+                            );
+        
+                        }
+                        else{
+                            tableDatos.rows.add(
+                                item.SUCURSAL,
+                                item.NOMBRE_PROBEEDOR,
+                                log_insert,
+                                item.CEDULA_CLIENTE.replace('"',''),
+                                item.NOMBRE_CLIENTE.replace('"',''),
+                                item.NRO_OC,
+                                item.DIRECCION_CLIENTE.replace('"',''),
+                                item.DEPARTAMENTO_CLIENTE.replace('"',''),
+                                item.CUIDAD_CLIENTE.replace('"',''),
+                                tipo_pedido,
+                                item.C_PRODUCTO.replace('"',''),
+                                item.CODIGO_BARRAS,
+                                item.CANTIDAD,
+                                item.OBSERVACION || '',
+                                item.C_TINDA,
+                                item.TELEFONO_CLIENTE || '',
+                                item.SUCURSAL
+                            );
+        
+        
+                        }
+            
+                    });
+
+                    if(arreglocsv.length > 0){
+        
+                            console.log(tableDatos)
+                
+                    
+                            const request = new sql.Request(transaction);
+                            request
+                                .input("IN_DATA_OV", tableDatos)
+                                .input("IN_TIPO_PEDIDO", sql.Int, tipo_pedido)
+                                .input("IN_LOG_INSERT", sql.Int, log_insert)
+                                .output("MSG", sql.VarChar)
+                    
+                                .execute('POS.SSP_INSERT_OV_FROM_PLANO_TEST_DATA',
+                                function (err, recordsets, returnValue) {
+                                    if (err) {
+                                        console.log(err);
+                                        transaction.rollback(function (err) {
+                                        });
+                                        res.json({
+                                            error: err,
+                                            MSG: err.message
+                                        });
+                                        res.end();
+                                        return;
+                                    }
+                    
+                                    if (request.parameters.MSG.value !== "OK") {
+                    
+                                        transaction.rollback(function (err2) { // ... error checks
+                                        });
+                                        res.json({
+                                            error: "err",
+                                            MSG: request.parameters.MSG.value
+                                        });
+                                        res.end();
+                    
+                                    } else {
+
+                                        cant--;
+                                        callback();
+                                        if(cant ===0){
+
+                                            transaction.commit(function (err, recordset) {
+                                        
+                                                console.log("Transaction commited.");
+                        
+                                                res.json({
+                                                    data: recordsets,
+                                                    'MSG': request.parameters.MSG.value
+                                                });
+                                                res.end();
+                                            });
+
+                                        }
+                                
+                                    }
+                                });
+                    
+                
+                
+                    }
+                
+                
+            
+                    });// termina lectura de archivos
+
+
+            
+                
+
+                });// termina each 
+
+        
+            }) // TERMINA TRANSACIION
+
+        }) // termina get DAO
+        .catch(err => {
+            console.error(err);
+            res.json({
+                MSG: "ERROR",
+                error: err
+            });
+        });
+
+      
+     
+    });
+
+
+
+    
+
+router.get('/getDetalleDespachoParcial/:cs_id_h_despacho', function (req, res, next) {
+
+    config.configBD2.database = CONSTANTES.POSDB;
+    var connection            = new sql.Connection(utils.clone(config.configBD2), function (err) {
+        // ... error checks
+        if (err) {
+            res.json(err);
+            console.error(err);
+            return;
+        }
+        // Stored Procedure
+        var request     = new sql.Request(connection);
+        request.verbose = false;
+        request.input("IN_CS_ID_DESPACHO", sql.Int, req.params.cs_id_h_despacho);
+
+        request.execute('POS.SSP_GET_DETALLE_DESPACHO_PARCIAL', function (err, recordsets, returnValue) {
+            if (err) {
+                return res.json(err);
+            } else {
+                res.json({
+                    data: recordsets
+                });
+            }
+
+        });
+    });
+
+});
+
+
+
+
+
+
+
+router.post('/comprometerOrdenVentaParcial', function (req, res, next) {
+    
+
+    config.configBD2.database = CONSTANTES.POSDB;
+    var connection            = new sql.Connection(utils.clone(config.configBD2), function (err) {
+        // ... error checks
+        if (err) {
+            console.error(err);
+            res.json(err);
+            sql.close();
+            return;
+        }
+        // Stored Procedure
+        var request     = new sql.Request(connection);
+        request.verbose = false;
+        request.input("IN_CS_ID_ORDEN", sql.BigInt, req.body.csIdOrden);
+        request.input("IN_ID_USUARIO", sql.Int, req.body.csIdusuario);
+
+        request.output("MSG", sql.VarChar);
+        request.execute('POS.SSP_UPDATE_COMPROMETER_PARCIAL', function (err, recordsets, returnValue) {
+            if (err) {
+                res.json(err);
+                sql.close();
+                return;
+            }
+
+            res.json({
+                data : recordsets,
+                'MSG': request.parameters.MSG.value
+            });
+            sql.close();
+        });
     });
 });
 
