@@ -44,7 +44,7 @@
     "strong-soap": "^1.2.3",
     "tedious": "^1.14.0",
     "tedious-connection-pool": "^1.0.5",
-    "underscore": "^1.8.3"
+    "underscore": "^1.12.1"
   },
   "devDependencies": {
     "better-npm-run": "^0.0.14",
